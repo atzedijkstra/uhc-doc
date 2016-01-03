@@ -589,9 +589,6 @@ PACKAGE_URL=''
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 EXIT_IF_ABSENT_LIB_OR_TOOL
-EXTLIBS_GMP_PKG_NAME
-EXTLIBS_BGC_PKG_NAME
-RTS_PKG_NAME
 INSTALL_LIB_SUFFIX
 INPLACE_INSTALLFORBLD_DIR
 INPLACE_INSTALL_DIR
@@ -655,6 +652,9 @@ GHC_GEN_OPTIONS
 GHC_EHC_OPTIONS
 CABAL_CMD
 cabalCmd
+UHC_VERSION
+UHC_CMD
+uhcCmd
 GHC_VERSION
 GHC_CMD
 ghcCmd
@@ -747,6 +747,7 @@ with_cabal_config_options
 with_ehc_unixtool_prefix
 with_haddock
 with_hc
+with_uhc
 with_cabal
 with_ghc_ehc_options
 with_uuagc
@@ -1414,6 +1415,7 @@ Optional Packages:
   --with-hc=<haskell compiler>
                           Use a command different from 'ghc' to compile with
                           GHC.
+  --with-uhc=<UHC>        Use a command different from 'uhc' to use UHC.
   --with-cabal=<cabal package installer>
                           Use a command different from 'cabal' to build
                           libraries with GHC.
@@ -2721,6 +2723,74 @@ fi
 GHC_CMD=$ghcCmd
 
 GHC_VERSION=$ghcVersion
+
+
+
+### 'with' option for UHC compiler, by default uhc
+
+# Check whether --with-uhc was given.
+if test "${with_uhc+set}" = set; then :
+  withval=$with_uhc;  uhcCmd="$withval"
+else
+
+  if test "$UHC" = ""; then
+    # Extract the first word of "uhc", so it can be a program name with args.
+set dummy uhc; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_uhcCmd+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $uhcCmd in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_uhcCmd="$uhcCmd" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_uhcCmd="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+uhcCmd=$ac_cv_path_uhcCmd
+if test -n "$uhcCmd"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $uhcCmd" >&5
+$as_echo "$uhcCmd" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  else
+    uhcCmd=$UHC
+  fi
+
+
+fi
+
+if test "$uhcCmd" != "no" -a -x "$uhcCmd" ; then
+  uhcExists="yes"
+  uhcVersion=`$uhcCmd --version-dotted`
+else
+  uhcCmd=""
+  uhcExists="no"
+fi
+UHC_CMD=$uhcCmd
+
+UHC_VERSION=$uhcVersion
 
 
 
@@ -4441,18 +4511,11 @@ INPLACE_INSTALLFORBLD_DIR="$inplaceInstallForBldDir"
 INSTALL_LIB_SUFFIX="lib/uhc"
 
 
-### package names assumed by compiler driver
-RTS_PKG_NAME="EH-RTS"
-
-EXTLIBS_BGC_PKG_NAME="gc"
- # should coincide with installed lib in extlibs/bgc
-EXTLIBS_GMP_PKG_NAME="gmp"
- # should coincide with installed lib in extlibs/gmp
-
 ### if some of the required libraries/tools are absent, this def will check for it and exit when make is invoked
 if test "x$uuagcExists" = "xyes" \
    -a "x$shuffleExists" = "xyes" \
    -a "x$ghcExists" = "xyes" \
+   -a "x$uhcExists" = "xyes" \
    -a "x$gccExists" = "xyes" \
    -a "x$ghcLibsRequiredButAbsent" = "x"
 then
@@ -4466,6 +4529,7 @@ EXIT_IF_ABSENT_LIB_OR_TOOL=$exitIfAbsentLibOrTool
 ### file generation
 ac_config_files="$ac_config_files mk/config.mk mk/shared.mk"
 
+ac_config_files="$ac_config_files text/UHCInfo.cltex"
 
 ac_config_files="$ac_config_files src/text2text/text2text.cabal"
 
@@ -5177,6 +5241,7 @@ do
   case $ac_config_target in
     "mk/config.mk") CONFIG_FILES="$CONFIG_FILES mk/config.mk" ;;
     "mk/shared.mk") CONFIG_FILES="$CONFIG_FILES mk/shared.mk" ;;
+    "text/UHCInfo.cltex") CONFIG_FILES="$CONFIG_FILES text/UHCInfo.cltex" ;;
     "src/text2text/text2text.cabal") CONFIG_FILES="$CONFIG_FILES src/text2text/text2text.cabal" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -5664,6 +5729,14 @@ echo "      required and present      : $ghcLibsRequiredAndPresent"
   fi
 else
 echo "    **** ERROR **** : ghc must be installed, see http://www.haskell.org/ghc"
+fi
+
+echo "  uhc is available?             : $uhcExists"
+if test "x$uhcExists" = "xyes" ;then
+echo "    version                     : $uhcVersion"
+echo "    command for uhc             : $uhcCmd"
+else
+echo "    **** ERROR **** : uhc must be installed"
 fi
 
 echo "  gcc is available?             : $gccExists"

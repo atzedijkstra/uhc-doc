@@ -1,0 +1,12 @@
+%%[versionDotted
+%%@[exec:@UHC_CMD@ --version-dotted%%]
+%%]
+
+%%[metaTargetDefault
+%%@[exec:@UHC_CMD@ --meta-target-default%%]
+%%]
+
+%%[help
+%%@[exec:@UHC_CMD@ --help%%]
+%%]
+

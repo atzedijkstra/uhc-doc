@@ -49,8 +49,8 @@ import Text
 -------------------------------------------------------------------------------------------
 
 data ScInput
-  = ScInput_Uninterpreted		String		-- plain, yet uninterpreted text
-  | ScInput_TextAST				TextItems	-- already Text AST
+  = ScInput_Uninterpreted       String      -- plain, yet uninterpreted text
+  | ScInput_TextAST             TextItems   -- already Text AST
 
 scinputMerge :: [ScInput] -> [ScInput]
 scinputMerge
@@ -67,16 +67,16 @@ scinputMerge
 -------------------------------------------------------------------------------------------
 
 data ScType
-  = ScTpMeta				-- text blocks
-  | ScTpMetaMeta			-- text blocks meta info
-  | ScTpContent TextType	-- text content
-  | ScTpCmtLF ScType		-- inside linefeed terminated comment
-  | ScTpVerbatim String ScType		-- inside multiline verbatim
+  = ScTpMeta                -- text blocks
+  | ScTpMetaMeta            -- text blocks meta info
+  | ScTpContent TextType    -- text content
+  | ScTpCmtLF ScType        -- inside linefeed terminated comment
+  | ScTpVerbatim String ScType      -- inside multiline verbatim
   deriving (Eq,Ord,Show)
 
 data ScState
-  = ScState { scstateLevel	:: Int 			-- level
-            , scstateType	:: ScType		-- text type
+  = ScState { scstateLevel  :: Int          -- level
+            , scstateType   :: ScType       -- text type
             }
   | ScSkip
   deriving (Eq,Ord,Show)

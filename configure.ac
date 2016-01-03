@@ -296,6 +296,29 @@ AC_SUBST(GHC_CMD,$ghcCmd)
 AC_SUBST(GHC_VERSION, $ghcVersion)
 
 
+### 'with' option for UHC compiler, by default uhc
+AC_ARG_WITH(uhc,
+[AS_HELP_STRING([--with-uhc=<UHC>],[Use a command different from 'uhc' to use UHC.])],
+[ uhcCmd="$withval" ],
+[
+  if test "$UHC" = ""; then
+    AC_PATH_PROG(uhcCmd,uhc)
+  else
+    uhcCmd=$UHC
+  fi
+]
+)
+if test "$uhcCmd" != "no" -a -x "$uhcCmd" ; then
+  uhcExists="yes"
+  uhcVersion=`$uhcCmd --version-dotted`
+else
+  uhcCmd=""
+  uhcExists="no"
+fi
+AC_SUBST(UHC_CMD,$uhcCmd)
+AC_SUBST(UHC_VERSION, $uhcVersion)
+
+
 ### 'with' option for cabal, by default cabal
 AC_ARG_WITH(cabal,
 [AS_HELP_STRING([--with-cabal=<cabal package installer>],[Use a command different from 'cabal' to build libraries with GHC.])],
@@ -773,15 +796,11 @@ AC_SUBST(INPLACE_INSTALL_DIR, "$inplaceInstallDir")
 AC_SUBST(INPLACE_INSTALLFORBLD_DIR, "$inplaceInstallForBldDir")
 AC_SUBST(INSTALL_LIB_SUFFIX, "lib/uhc")
 
-### package names assumed by compiler driver
-AC_SUBST(RTS_PKG_NAME, "EH-RTS")
-AC_SUBST(EXTLIBS_BGC_PKG_NAME, "gc") # should coincide with installed lib in extlibs/bgc
-AC_SUBST(EXTLIBS_GMP_PKG_NAME, "gmp") # should coincide with installed lib in extlibs/gmp
-
 ### if some of the required libraries/tools are absent, this def will check for it and exit when make is invoked
 if test "x$uuagcExists" = "xyes" \
    -a "x$shuffleExists" = "xyes" \
    -a "x$ghcExists" = "xyes" \
+   -a "x$uhcExists" = "xyes" \
    -a "x$gccExists" = "xyes" \
    -a "x$ghcLibsRequiredButAbsent" = "x"
 then
@@ -793,7 +812,7 @@ AC_SUBST(EXIT_IF_ABSENT_LIB_OR_TOOL, $exitIfAbsentLibOrTool)
 
 ### file generation
 AC_CONFIG_FILES([mk/config.mk mk/shared.mk])
-
+AC_CONFIG_FILES([text/UHCInfo.cltex])
 AC_CONFIG_FILES([src/text2text/text2text.cabal])
 
 AC_OUTPUT
@@ -834,6 +853,14 @@ echo "      required and present      : $ghcLibsRequiredAndPresent"
   fi
 else
 echo "    **** ERROR **** : ghc must be installed, see http://www.haskell.org/ghc"
+fi
+
+echo "  uhc is available?             : $uhcExists"
+if test "x$uhcExists" = "xyes" ;then
+echo "    version                     : $uhcVersion"
+echo "    command for uhc             : $uhcCmd"
+else
+echo "    **** ERROR **** : uhc must be installed"
 fi
 
 echo "  gcc is available?             : $gccExists"

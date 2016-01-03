@@ -43,23 +43,23 @@ t2tScanOpts
 -- Parser for meta level, not dealing with content
 -------------------------------------------------------------------------
 
-pAGItf				::	T2TPr AGItf
-pAGItf				=	AGItf_AGItf <$> pTextItems
+pAGItf              ::  T2TPr AGItf
+pAGItf              =   AGItf_AGItf <$> pTextItems
 
-pTextItems			::	T2TPr TextItems
-pTextItems			=	pList pTextItem
+pTextItems          ::  T2TPr TextItems
+pTextItems          =   pList pTextItem
 
-pTextItem			::	T2TPr TextItem
-pTextItem			=	pT2T <|> pLine <|> pLineFeed
+pTextItem           ::  T2TPr TextItem
+pTextItem           =   pT2T <|> pLine <|> pLineFeed
 
-pLine				::	T2TPr TextItem
-pLine				=	TextItem_Line <$> pText
+pLine               ::  T2TPr TextItem
+pLine               =   TextItem_Line <$> pText
 
-pLineFeed			::	T2TPr TextItem
-pLineFeed			=	TextItem_LineFeed <$ pNl
+pLineFeed           ::  T2TPr TextItem
+pLineFeed           =   TextItem_LineFeed <$ pNl
 
-pT2T				::	T2TPr TextItem
-pT2T				=	TextItem_T2T <$> (tokPos <$> pBegContent) <*> pTextType <*> pTextItems <* pEndContent
+pT2T                ::  T2TPr TextItem
+pT2T                =   TextItem_T2T <$> (tokPos <$> pBegContent) <*> pTextType <*> pTextItems <* pEndContent
 
-pTextType			::	T2TPr TextType
-pTextType			=	pAnyFromMap pKey texttypeMp
+pTextType           ::  T2TPr TextType
+pTextType           =   pAnyFromMap pKey texttypeMp

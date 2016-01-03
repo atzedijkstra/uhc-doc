@@ -66,16 +66,16 @@ texttypeMp = Map.fromList [ (show t, t) | t <- [TextType_DocLaTeX,TextType_TWiki
 
 data Opts 
   = Opts
-      { optGenFor           	::	TextType
-      , optHelp					::	Bool
-      , optGenHeaderNumbering	::	Bool
+      { optGenFor               ::  TextType
+      , optHelp                 ::  Bool
+      , optGenHeaderNumbering   ::  Bool
       }
 
 defaultOpts 
   = Opts
-      { optGenFor           	= 	TextType_DocLaTeX
-      , optHelp					=	False
-      , optGenHeaderNumbering	=	False
+      { optGenFor               =   TextType_DocLaTeX
+      , optHelp                 =   False
+      , optGenHeaderNumbering   =   False
       }
 
 -------------------------------------------------------------------------
@@ -83,15 +83,15 @@ defaultOpts
 -------------------------------------------------------------------------
 
 data Err
-  = Err_Out 		OutDoc
-  | Err_NoPlugin 	TextType
+  = Err_Out         OutDoc
+  | Err_NoPlugin    TextType
 
 instance Show Err where
   show _ = "Err"
 
 instance Out Err where
-  out (Err_Out 			o) = o
-  out (Err_NoPlugin 	t) = "no plugin for " +++ show t
+  out (Err_Out          o) = o
+  out (Err_NoPlugin     t) = "no plugin for " +++ show t
 
 -------------------------------------------------------------------------
 -- Combine maybe's

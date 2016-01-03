@@ -1052,7 +1052,8 @@ WWW home page:
 %%[43
 \title{UHC user manual,
 version
-%%@[exec:install/100/bin/ehc --version-dotted%%]}
+ %%@UHCInfo.versionDotted
+}
 \author{Atze Dijkstra}
 %%]
 

@@ -59,8 +59,8 @@ cmd1argMp
       , ("emph"                 , TextItem_Styled TextStyle_Emphasized      )
       , ("usepackage"           , TextItem_Import                           )
       , ("paragraph"            , TextItem_Header HeaderLevel_Paragraph     )
-      , ("secRef"     			, mkref1 "section"							)
-      , ("figRef"     			, mkref1 "figure"							)
+      , ("secRef"               , mkref1 "section"                          )
+      , ("figRef"               , mkref1 "figure"                           )
       -- , ("includegraphics"      , TextItem_GraphicsInline Nothing           )
       ]
     `Map.union` Map.fromList [ (concat (replicate l "sub") ++ "section", TextItem_Header (HeaderLevel_Level l)) | l <- [0..2] ]
@@ -164,8 +164,8 @@ specCharsAt                 =   "@"
 specCharsAmpersand          =   "&"
 specCharsOther              =   "=,"
 
-keywsInBeginEnd				=	[ "tabular", "document" ]
-keywsInBeginEndGroupType	=	Map.keys grouptypeMp
+keywsInBeginEnd             =   [ "tabular", "document" ]
+keywsInBeginEndGroupType    =   Map.keys grouptypeMp
 
 doclatexScanOpts :: ScanOpts
 doclatexScanOpts
@@ -224,12 +224,12 @@ pText3ItemsP' p1 p2 p3
 pTextFirstAndItemsP'::  T2TPr3' TextItem TextItem (Seq.Seq TextItem)
 pTextFirstAndItemsP' p1 p2
 {-
-					=   Seq.singleton <$> p1
-					<|> (\i -> Seq.unions [ Seq.unions $ map Seq.fromList [i1,i2] | (i1,i2) <- i ])
-					    <$> pList (((:[]) <$> p2) <+> pList p1)
+                    =   Seq.singleton <$> p1
+                    <|> (\i -> Seq.unions [ Seq.unions $ map Seq.fromList [i1,i2] | (i1,i2) <- i ])
+                        <$> pList (((:[]) <$> p2) <+> pList p1)
 -}
-					=   (\i1 i2 -> Seq.unions (Seq.fromList i1 : concat [ map Seq.fromList i | i <- i2 ]))
-					    <$> pList p1 <*> pList ((\i1 i2 -> [i1,i2]) <$> ((:[]) <$> p2 <|> pAST) <*> pList p1)
+                    =   (\i1 i2 -> Seq.unions (Seq.fromList i1 : concat [ map Seq.fromList i | i <- i2 ]))
+                        <$> pList p1 <*> pList ((\i1 i2 -> [i1,i2]) <$> ((:[]) <$> p2 <|> pAST) <*> pList p1)
 
 pTextItemsP         ::  T2TPr2' TextItem TextItems
 pTextItemsP pItm    =   Seq.toList <$> pTextItemsP' pItm
@@ -243,7 +243,7 @@ pText3ItemsP p1 p2 p3
 
 pTextFirstAndItemsP ::  T2TPr3' TextItem TextItem TextItems
 pTextFirstAndItemsP p1 p2
-					=   Seq.toList <$> pTextFirstAndItemsP' p1 p2
+                    =   Seq.toList <$> pTextFirstAndItemsP' p1 p2
 
 pTextItemsAll       ::  T2TPr TextItems
 pTextItemsAll       =   pTextItemsP pTextItemAll

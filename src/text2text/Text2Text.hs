@@ -88,20 +88,20 @@ pluginMp
       [ ( TextType_DocLaTeX
         , defaultPlugin
             { plgHasParserTextItems = True
-            , plgParseTextItems2 	= P_DocLaTeX.pItf
-            , plgScanOptsMp 		= P_DocLaTeX.doclatexScanOptsMp
-            , plgScanInitState		= defaultScState { scstateType = ScTpContent TextType_DocLaTeX }
-            , plgToOutDoc			= Just O_DocLaTeX.textToOutDoc
+            , plgParseTextItems2    = P_DocLaTeX.pItf
+            , plgScanOptsMp         = P_DocLaTeX.doclatexScanOptsMp
+            , plgScanInitState      = defaultScState { scstateType = ScTpContent TextType_DocLaTeX }
+            , plgToOutDoc           = Just O_DocLaTeX.textToOutDoc
             }
         )
       , ( TextType_TWiki
         , defaultPlugin
-            { plgToOutDoc			= Just O_TWiki.textToOutDoc
+            { plgToOutDoc           = Just O_TWiki.textToOutDoc
             }
         )
       , ( TextType_Html
         , defaultPlugin
-            { plgToOutDoc			= Just O_Html.textToOutDoc
+            { plgToOutDoc           = Just O_Html.textToOutDoc
             }
         )
       ]
@@ -114,7 +114,7 @@ cmdLineOpts
   =  [ Option "" [s] (NoArg (\o -> o {optGenFor = t})) ("generate " ++ s) | (s,t) <- Map.toList texttypeMp
      ]
      ++
-     [  Option ""   ["help"]            			(NoArg oHelp)
+     [  Option ""   ["help"]                        (NoArg oHelp)
           "output this help"
      ,  Option ""   ["gen-header-numbering"]        (OptArg oGenHdrNr "yes|no")
           "generate header numbering, default=no"

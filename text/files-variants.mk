@@ -65,6 +65,7 @@ TEXT_SUBS					+= AGMiniPrimer StoryIntro StoryEH1 StoryEH2 StoryAFP Scratch \
 								RoadMap \
 								TopicJavaScript \
 								ThePlan \
+								UHCInfo \
 								Blog
 								
 

@@ -25,6 +25,5 @@ executable text2text
     , Text.To.DocLaTeX
     , Text.To.TWiki
     , Text.To.Html
-  extensions: TypeSynonymInstances, MultiParamTypeClasses, Rank2Types, FlexibleContexts, ImpredicativeTypes
+  extensions: TypeSynonymInstances, TypeSynonymInstances, MultiParamTypeClasses, Rank2Types, FlexibleContexts, ImpredicativeTypes
   hs-source-dirs: @TOP_ABS@/build/text2text
-  Ghc-Options: -fglasgow-exts
