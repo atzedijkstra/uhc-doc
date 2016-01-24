@@ -1,5 +1,5 @@
 # location of figs src
-FIGS_SRC_PREFIX				:= $(TOP_PREFIX)figs/
+FIGS_SRC_PREFIX				:= $(UHCDOC_TOP_PREFIX)figs/
 FIGS_SRC_SUBDIRS_PREFIX		:= $(patsubst %,$(FIGS_SRC_PREFIX)%/,hs09-uhcarch)
 
 # this file

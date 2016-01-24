@@ -1,2 +1,2 @@
 # location of src
-SRC_PREFIX	:= $(TOP_PREFIX)src/
+UHCDOC_SRC_PREFIX						:= $(UHCDOC_TOP_PREFIX)src/

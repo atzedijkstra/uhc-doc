@@ -1,6 +1,6 @@
-LLVM_CODE_IMG_PREFIX       := $(TOP_PREFIX)text/llvm/img/
-LLVM_CODE_SRC_PREFIX       := $(TOP_PREFIX)text/llvm/code/
-LLVM_CODE_DATA_PREFIX      := $(TOP_PREFIX)text/llvm/data/
+LLVM_CODE_IMG_PREFIX       := $(UHCDOC_TOP_PREFIX)text/llvm/img/
+LLVM_CODE_SRC_PREFIX       := $(UHCDOC_TOP_PREFIX)text/llvm/code/
+LLVM_CODE_DATA_PREFIX      := $(UHCDOC_TOP_PREFIX)text/llvm/data/
 
 LLVM_THESIS_EXAMPLES       := $(TEXT_TMP_VARIANT_PREFIX)Fib.lhs \
                               $(TEXT_TMP_VARIANT_PREFIX)FibExe.core \

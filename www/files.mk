@@ -1,5 +1,5 @@
 # location of shuffle src
-WWW_SRC_PREFIX			:= $(TOP_PREFIX)www/
+WWW_SRC_PREFIX			:= $(UHCDOC_TOP_PREFIX)www/
 
 # this file
 WWW_MKF					:= $(WWW_SRC_PREFIX)files.mk

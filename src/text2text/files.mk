@@ -2,13 +2,13 @@
 # location of text2text src
 ###########################################################################################
 
-SRC_TEXT2TEXT_PREFIX						:= $(SRC_PREFIX)text2text/
+SRC_TEXT2TEXT_PREFIX						:= $(UHCDOC_SRC_PREFIX)text2text/
 
 ###########################################################################################
 # location of text2text build
 ###########################################################################################
 
-TEXT2TEXT_BLD_PREFIX						:= $(BLD_PREFIX)text2text/
+TEXT2TEXT_BLD_PREFIX						:= $(UHCDOC_BLD_PREFIX)text2text/
 
 ###########################################################################################
 # this file
@@ -95,7 +95,7 @@ TEXT2TEXT_UUAGC_OPTS						:= --strictdata --strictwrap -O
 ###########################################################################################
 
 TEXT2TEXT_NAME								:= text2text
-TEXT2TEXT_BLD_EXEC							:= $(BIN_PREFIX)$(TEXT2TEXT_NAME)$(EXEC_SUFFIX)
+TEXT2TEXT_BLD_EXEC							:= $(UHCDOC_BIN_PREFIX)$(TEXT2TEXT_NAME)$(EXEC_SUFFIX)
 TEXT2TEXT									:= $(TEXT2TEXT_BLD_EXEC)
 
 ###########################################################################################

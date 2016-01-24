@@ -18,7 +18,9 @@ TEXT_PRIV_VARIANTS			+= flops06-ruler-paper flops06-ruler \
 								slides-ruler slides-ruler-long \
 								slides-explimpl slides-explimpl-fpnl slides-overview \
 								slides-status slides-uhcstatus \
-								slides-ehcstruct slides-ehcstruct-ufmg slides-hs09-uhcarch slides-uhcarch \
+								slides-ehcstruct \
+								slides-ehcstruct-ufmg slides-ehcstruct-ufmg-nosrc \
+								slides-hs09-uhcarch slides-uhcarch \
 								slides-uhcinternals \
 								slides-javascript \
 								improving-uhc-js \

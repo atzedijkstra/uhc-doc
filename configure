@@ -670,6 +670,8 @@ UUAGC_OPTIONS
 SHUFFLE_EHC_OPTIONS
 CPP_EHC_OPTIONS
 GCC_EHC_OPTIONS
+RULER_UHC_EXAMPLES_REPO_PREFIX
+UHC_REPO_PREFIX
 EHC_BUILD_SUFFIX
 ASPECTS
 libtoolStaticCmd
@@ -736,6 +738,8 @@ enable_option_checking
 with_cpp
 with_aspects
 with_build_suffix
+with_uhc_repo_prefix
+with_ruler_uhc_examples_repo_prefix
 with_gcc_ehc_options
 with_cpp_ehc_options
 with_shuffle_ehc_options
@@ -1383,6 +1387,12 @@ Optional Packages:
   --with-build-suffix=<suffix for build locations>
                           Suffix for build locations and library names of
                           globally visible cabal managed libraries.
+  --with-uhc-repo-prefix=<prefix for uhc repo location>
+                          Prefix for uhc repo as it can be found locally, the
+                          top level dir as cloned.
+  --with-ruler-uhc-examples-repo-prefix=<prefix for ruler uhc examples repo location>
+                          Prefix for ruler uhc examples repo as it can be
+                          found locally, the top level dir as cloned.
   --with-gcc-ehc-options=<gcc compiler options for compiling runtime and ehc's gcc invocation>
                           Additional options to pass to GCC when compiling
                           with EHC.
@@ -2457,6 +2467,38 @@ then
   ehcBuildSuffix="`echo ${ASPECTS} | sed -e 's/ /-/g'`"
 fi
 EHC_BUILD_SUFFIX="$ehcBuildSuffix"
+
+
+### 'with' option for uhc repo prefix, which by default is derived from hardbaked aspects
+
+# Check whether --with-uhc-repo-prefix was given.
+if test "${with_uhc_repo_prefix+set}" = set; then :
+  withval=$with_uhc_repo_prefix;  uhcRepoPrefix="$withval"
+fi
+
+if test "x$uhcRepoPrefix" = "x"
+then
+  uhcRepoPrefix="../uhc/EHC/"
+else
+  uhcRepoPrefix="${uhcRepoPrefix}EHC/"
+fi
+UHC_REPO_PREFIX="$uhcRepoPrefix"
+
+
+### 'with' option for ruler uhc examples repo prefix, which by default is derived from hardbaked aspects
+
+# Check whether --with-ruler-uhc-examples-repo-prefix was given.
+if test "${with_ruler_uhc_examples_repo_prefix+set}" = set; then :
+  withval=$with_ruler_uhc_examples_repo_prefix;  rulerUhcExamplesRepoPrefix="$withval"
+fi
+
+if test "x$rulerUhcExamplesRepoPrefix" = "x"
+then
+  rulerUhcExamplesRepoPrefix="../ruler-uhc-examples/"
+else
+  rulerUhcExamplesRepoPrefix="${rulerUhcExamplesRepoPrefix}"
+fi
+RULER_UHC_EXAMPLES_REPO_PREFIX="$rulerUhcExamplesRepoPrefix"
 
 
 ### 'with' option for gcc options
@@ -5784,6 +5826,8 @@ echo "    command for ruler           : $rulerCmd"
 fi
 
 echo "Absolute location of directories:"
+echo "  uhc repository prefix         : ${uhcRepoPrefix}"
+echo "  ruler uhc examples repo prefix: ${rulerUhcExamplesRepoPrefix}"
 echo "  ehc repository                : $hardtop_plat2"
 echo "  ehc repository raw            : $hardtop_plat"
 echo "  unix root prefix raw          : $toplevelSystemAbsolutePathPrefix"

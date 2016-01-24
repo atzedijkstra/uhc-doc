@@ -1,5 +1,5 @@
 # location of fmt src
-LATEX_SRC_PREFIX	:= $(TOP_PREFIX)latex/
+LATEX_SRC_PREFIX	:= $(UHCDOC_TOP_PREFIX)latex/
 
 # this file
 LATEX_MKF			:= $(LATEX_SRC_PREFIX)files.mk

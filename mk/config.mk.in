@@ -2,8 +2,22 @@
 # this file
 ###########################################################################################
 
-MK_PREFIX									:= $(TOP_PREFIX)mk/
-MK_CONFIG_MKF								:= $(MK_PREFIX)config.mk
+UHCDOC_MK_PREFIX							:= $(UHCDOC_TOP_PREFIX)mk/
+MK_CONFIG_MKF								:= $(UHCDOC_MK_PREFIX)config.mk
+
+###########################################################################################
+# UHC repo
+###########################################################################################
+
+UHC_REPO_PREFIX								:= @UHC_REPO_PREFIX@
+UHC_TOP_PREFIX								:= $(UHC_REPO_PREFIX)
+
+###########################################################################################
+# Ruler UHC examples repo
+###########################################################################################
+
+RULER_UHC_EXAMPLES_REPO_PREFIX				:= @RULER_UHC_EXAMPLES_REPO_PREFIX@
+UHCRULES_TOP_PREFIX							:= $(RULER_UHC_EXAMPLES_REPO_PREFIX)
 
 ###########################################################################################
 # current date
@@ -17,26 +31,6 @@ TODAY			:= $(DATE)
 ###########################################################################################
 
 UHC_TEAM					:= Atze Dijkstra
-
-###########################################################################################
-# the overall version of EH
-###########################################################################################
-
-EH_VERSION_MAJOR			:= @EH_VERSION_MAJOR@
-EH_VERSION_MINOR			:= @EH_VERSION_MINOR@
-EH_VERSION_MINORMINOR		:= @EH_VERSION_MINORMINOR@
-EH_VERSION_MINORMINORMINOR	:= @EH_VERSION_MINORMINORMINOR@
-EH_VERSION_STABILITY		:= @EH_VERSION_STABILITY@
-EH_VERSION_SHORT			:= @EH_VERSION_SHORT@
-EH_VERSION_MEDIUM			:= @EH_VERSION_MEDIUM@
-EH_VERSION_FULL				:= @EH_VERSION_FULL@
-EH_VERSION_ASNUMBER			:= @EH_VERSION_ASNUMBER@
-
-###########################################################################################
-# Choice of aspects (by default empty, used of defined (if not here) in src/ehc/variant.mk)
-###########################################################################################
-
-ASPECTS					:= @ASPECTS@
 
 ###########################################################################################
 # platform config, currently changed to config by autoconf
@@ -65,11 +59,6 @@ TOPABS2_PREFIX		:= @TOP_ABS2@/
 #RULER2_OPTS_VERSION	:= --v2
 RULER2_OPTS_VERSION	:=
 
-### names of packages assumed by the compiler driver
-RTS_PKG_NAME				:= @RTS_PKG_NAME@
-EXTLIBS_BGC_PKG_NAME		:= @EXTLIBS_BGC_PKG_NAME@
-EXTLIBS_GMP_PKG_NAME		:= @EXTLIBS_GMP_PKG_NAME@
-
 ###########################################################################################
 # naming of files
 ###########################################################################################
@@ -89,77 +78,4 @@ HOST_PLATFORM_NRWORDBITS		:= @NRWORDBITS_PLATFORM@
 
 # A prefix to be added for direct access to otherwise hidden (by cygwin) locations
 TOPLEVEL_SYSTEM_ABSPATH_PREFIX		:= @TOPLEVEL_SYSTEM_ABSPATH_PREFIX@
-
-###########################################################################################
-# inclusion of features
-###########################################################################################
-
-# use cabal sandbox
-ifeq (@ENABLE_SANDBOX@,yes)
-ENABLE_SANDBOX				:= yes
-endif
-
-# include java code generation
-ifeq (@ENABLE_JAVA@,yes)
-ENABLE_JAVA					:= yes
-endif
-
-# include clr code generation
-ifeq (@ENABLE_CLR@,yes)
-ENABLE_CLR					:= yes
-endif
-
-# include javascript code generation
-ifeq (@ENABLE_JS@,yes)
-ENABLE_JS					:= yes
-endif
-
-# include llvm code generation
-ifeq (@ENABLE_LLVM@,yes)
-ENABLE_LLVM					:= yes
-endif
-
-# include cmm route for C generation
-ifeq (@ENABLE_CMM@,yes)
-ENABLE_CMM					:= yes
-endif
-
-# include C backend combined using whole program analysis
-ifeq (@ENABLE_WHOLEPROGC@,yes)
-ENABLE_WHOLEPROGC			:= yes
-ENABLE_WHOLEPROGANAL		:= yes
-endif
-
-# include whole program analysis
-ifeq (@ENABLE_WHOLEPROGANAL@,yes)
-ENABLE_WHOLEPROGANAL		:= yes
-endif
-
-# include use of Core as both backend & source
-ifeq (@ENABLE_CORE_ASINPOUTP@,yes)
-ENABLE_CORE_ASINPOUTP		:= yes
-endif
-
-# include use of CoreRun as source
-ifeq (@ENABLE_CORERUN_ASINPOUTP@,yes)
-ENABLE_CORERUN_ASINPOUTP	:= yes
-endif
-
-# include System F Ty generation for Core
-ifeq (@ENABLE_CORESYSF@,yes)
-ENABLE_CORESYSF				:= yes
-endif
-
-# include TyCore
-ifeq (@ENABLE_TYCORE@,yes)
-ENABLE_CORESYSF				:= yes
-ENABLE_TYCORE				:= yes
-endif
-
-# include TyCore based transformations
-ifeq (@ENABLE_TAUPHI@,yes)
-ENABLE_CORESYSF				:= yes
-ENABLE_TYCORE				:= yes
-ENABLE_TAUPHI				:= yes
-endif
 

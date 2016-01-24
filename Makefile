@@ -6,7 +6,7 @@
 # Location from which make is invoked
 ###########################################################################################
 
-TOP_PREFIX				:= 
+UHCDOC_TOP_PREFIX		:= 
 
 ###########################################################################################
 # First (default) target just explains what can be done
@@ -25,6 +25,7 @@ help: explanation
 -include lhs2TeX/files.mk
 
 include mk/config.mk
+include $(UHC_TOP_PREFIX)mk/config.mk
 
 ### BEGIN of Ruler1
 # This definitely should not remain here....!!!!
@@ -48,16 +49,18 @@ $(RULER1): $(RULER1_DIR)/$(RULER1_AG) $(LIB_EH_UTIL_INS_FLAG)
 ### END of Ruler1
 
 include src/files.mk
-#include $(SRC_PREFIX)ehc/shared.mk
+include $(UHC_TOP_PREFIX)src/files.mk
+include $(UHCRULES_TOP_PREFIX)src/files.mk
+include $(UHC_SRC_PREFIX)ehc/shared.mk
 #include $(MK_PREFIX)functions.mk
-include $(MK_PREFIX)shared.mk
+include $(UHCDOC_MK_PREFIX)shared.mk
 
 #include $(SRC_PREFIX)libutil/files.mk
-include $(SRC_PREFIX)text2text/files.mk
+include $(UHCDOC_SRC_PREFIX)text2text/files.mk
 #include $(SRC_PREFIX)ruler2/files.mk
-#include $(SRC_PREFIX)ehc/variant.mk
+include $(UHC_SRC_PREFIX)ehc/variant.mk
 #include $(SRC_PREFIX)gen/files.mk
-#include $(SRC_PREFIX)ehc/files1.mk
+include $(UHC_SRC_PREFIX)ehc/files1.mk
 
 #include $(SRC_PREFIX)ehc/files2.mk
 include figs/files.mk
@@ -68,16 +71,6 @@ include text/files2.mk
 include text/files-targets.mk
 include $(wildcard text/files2-*.mk)
 include www/files.mk
-
-###########################################################################################
-# all versions (as used by testing)
-###########################################################################################
-
-VERSIONS			:= $(EHC_PUB_VARIANTS)
-
-# distributed/published stuff for WWW
-#WWW_SRC_TGZ					:= www/current-ehc-src.tgz
-#WWW_DOC_PDF					:= www/current-ehc-doc.pdf
 
 ###########################################################################################
 # Target: explain what can be done
@@ -107,7 +100,7 @@ explanation:
 
 docs: $(TEXT_DIST_DOC_FILES)
 
-cleans: $(patsubst %,%/clean,$(EHC_VARIANTS))
+#cleans: $(patsubst %,%/clean,$(EHC_VARIANTS))
 
 ###########################################################################################
 # Target: www stuff + sync to www. The full content of www is copied, including releases

@@ -155,6 +155,32 @@ then
 fi
 AC_SUBST(EHC_BUILD_SUFFIX, "$ehcBuildSuffix")
 
+### 'with' option for uhc repo prefix, which by default is derived from hardbaked aspects
+AC_ARG_WITH(uhc-repo-prefix,
+[AC_HELP_STRING([--with-uhc-repo-prefix=<prefix for uhc repo location>],
+                [Prefix for uhc repo as it can be found locally, the top level dir as cloned.])],
+[ uhcRepoPrefix="$withval" ],)
+if test "x$uhcRepoPrefix" = "x"
+then
+  uhcRepoPrefix="../uhc/EHC/"
+else
+  uhcRepoPrefix="${uhcRepoPrefix}EHC/"
+fi
+AC_SUBST(UHC_REPO_PREFIX, "$uhcRepoPrefix")
+
+### 'with' option for ruler uhc examples repo prefix, which by default is derived from hardbaked aspects
+AC_ARG_WITH(ruler-uhc-examples-repo-prefix,
+[AC_HELP_STRING([--with-ruler-uhc-examples-repo-prefix=<prefix for ruler uhc examples repo location>],
+                [Prefix for ruler uhc examples repo as it can be found locally, the top level dir as cloned.])],
+[ rulerUhcExamplesRepoPrefix="$withval" ],)
+if test "x$rulerUhcExamplesRepoPrefix" = "x"
+then
+  rulerUhcExamplesRepoPrefix="../ruler-uhc-examples/"
+else
+  rulerUhcExamplesRepoPrefix="${rulerUhcExamplesRepoPrefix}"
+fi
+AC_SUBST(RULER_UHC_EXAMPLES_REPO_PREFIX, "$rulerUhcExamplesRepoPrefix")
+
 ### 'with' option for gcc options
 AC_ARG_WITH(gcc-ehc-options,
 [AS_HELP_STRING([--with-gcc-ehc-options=<gcc compiler options for compiling runtime and ehc's gcc invocation>],[Additional options to pass to GCC when compiling with EHC.])],
@@ -908,6 +934,8 @@ echo "    command for ruler           : $rulerCmd"
 fi
 
 echo "Absolute location of directories:"
+echo "  uhc repository prefix         : ${uhcRepoPrefix}"
+echo "  ruler uhc examples repo prefix: ${rulerUhcExamplesRepoPrefix}"
 echo "  ehc repository                : $hardtop_plat2"
 echo "  ehc repository raw            : $hardtop_plat"
 echo "  unix root prefix raw          : $toplevelSystemAbsolutePathPrefix"

@@ -3,7 +3,7 @@
 ###########################################################################################
 
 # location of text src
-TEXT_SRC_PREFIX				:= $(TOP_PREFIX)text/
+TEXT_SRC_PREFIX				:= $(UHCDOC_TOP_PREFIX)text/
 
 # this file
 TEXT_MKF					:= $(wildcard $(TEXT_SRC_PREFIX)files*.mk)
@@ -21,7 +21,7 @@ TEXT_SUBS_ASIS				:= afp-pgf
 # variant, to be configured on top level
 TEXT_VARIANT				:= $(TEXT_MAIN)
 TEXT_SHUFFLE_VARIANT		:= 1
-TEXT_TMP_PREFIX				:= $(BLD_PREFIX)
+TEXT_TMP_PREFIX				:= $(UHCDOC_BLD_PREFIX)
 TEXT_TMP_VARIANT_PREFIX		:= $(TEXT_TMP_PREFIX)$(TEXT_VARIANT)/
 
 ###########################################################################################
