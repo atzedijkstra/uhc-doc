@@ -271,7 +271,9 @@ text-variant-slides-ehcstruct:
 	  text-variant-dflt-once
 
 text-variant-slides-ehcstruct-ufmg:
-	$(MAKE) TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC=yes \
+	$(MAKE) \
+	  TEXT_CFG_TEXT_INCLUDES_RULER_EHC_TEX=yes \
+	  TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC=yes \
 	  INCLUDE_DERIVED_MK=yes \
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--set=yesBeamer --set=storyStructure --unset=asArticle --set=asSlides --unset=useHyperref --unset=refToPDF --set=dateUFMG" \
 	  TEXT_SHUFFLE_VARIANT=28 \
