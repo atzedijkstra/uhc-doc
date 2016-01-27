@@ -52,6 +52,10 @@
 \documentclass[ignorenonframetext]{beamer}
 %%]
 
+%%[74
+\documentclass{beamer}
+%%]
+
 %%[19
 \documentclass[a4]{report}
 %%]
@@ -115,7 +119,7 @@
 %%% Paper size
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 %if storyPHD
 \setlength{\paperwidth}{170mm}
 \setlength{\paperheight}{240mm}
@@ -148,6 +152,10 @@
 %include forText.fmt
 %%]
 
+%%[75
+%include lhs2TeX.fmt
+%%]
+
 %%[67
 %if asSlides
 %let slides = True
@@ -164,11 +172,15 @@
 %include Javascript.fmt
 %%]
 
+%%[73
+% Nothing yet
+%%]
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Lhs2TeX + variant config, this is now partially obsolete as config is also mgt via Shuffle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 %% configuration of what to include
 
 %if False %% storyPHD || storyAfpTRUU1
@@ -280,7 +292,7 @@
 %%% Epic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 \usepackage{epic}
 %%]
 
@@ -288,7 +300,7 @@
 %%% Change bar (does not work)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 
 %if withChangeBar
 %\usepackage{changebar}
@@ -307,7 +319,7 @@
 %%% Indirection of chapter ref's, due to different configs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 \newcommand{\chapterNotIncludedRef}{not included in \thispaper}
 
 %if incl05
@@ -353,7 +365,9 @@
 
 
 \usepackage{graphicx} %%% needs: fancyvrb
+%%]
 
+%%[75
 %if natbib
 \usepackage{natbib}
 \bibpunct();A{},
@@ -421,6 +435,11 @@
 % \usepackage{boxedcode}
 %%]
 
+%%[74
+\usetheme[sidebar=true,style=plain]{uu}
+\usepackage{uucorporatecolors}
+%%]
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PGF, TikZ
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -475,7 +494,7 @@
 %%% PGF images, used by style
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 \pgfdeclareimage[width=4.3mm]{wwwlogo}{www-logo}%
 \newcommand{\WWWlogo}{%
 \begin{pgfpicture}{0cm}{0cm}{.5cm}{.43cm}
@@ -488,7 +507,7 @@
 %%% Lhs2TeX
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 %if kscode
 \usepackage{kscode}
 %endif
@@ -510,7 +529,7 @@
 %%% Fonts
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 
 %if not (storyRuler || storyRulerDoc) || asSlides
 \usepackage[bbgreekl]{mathbbol}
@@ -592,7 +611,7 @@
 %endif
 %%]
 
-%%[1
+%%[75
 \let\origSection=\section
 \let\origSubsection=\subsection
 \let\origSubsubsection=\subsubsection
@@ -686,7 +705,7 @@
 \renewcommand{\textfraction}{0.1}
 %%]
 
-%%[1
+%%[75
 %if not (asSlides || llncs || entcs || acm)
 %if wide
 %if asArticle
@@ -728,7 +747,7 @@
 %%% Ref
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 % Hyperref should be the last package loaded. The final online
 % version should use something different than the ugly boxes.
 
@@ -761,7 +780,7 @@
 %%% Title (part 1, definitions)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 %if truu
 \usepackage{TRtitlepage}
 \usepackage{a4wide}
@@ -1156,6 +1175,12 @@ WWW home page:
 }
 %%]
 
+%%[73
+\title{UHC: Coping with Compiler Complexity}
+\author{Atze Dijkstra}
+\date{FLOPS 2016}
+%%]
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Index
@@ -1185,7 +1210,7 @@ WWW home page:
 %%% Import of all code chunks in lhs2tex'd format
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 \input InclList.tex
 %%]
 
@@ -1193,7 +1218,7 @@ WWW home page:
 %%% Pictures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 % pgf picture
 \input afp-pgf.tex
 %%]
@@ -1205,7 +1230,7 @@ WWW home page:
 %%% Reference to this document
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 % the sort of paper
 %if False
 \newcommand{\thispaper}{these notes}
@@ -1247,11 +1272,12 @@ WWW home page:
 
 %%[1
 \begin{document}
+%%]
 
+%%[75
 %if llncs
 \frontmatter
 %endif
-
 %%]
 
 %%[37
@@ -1472,7 +1498,7 @@ and
 %%% Indentation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%[1
+%%[75
 % Avoid indentation
 %if blockstyle
 \setlength{\parindent}{0mm}
@@ -1674,7 +1700,7 @@ have been submitted to POPL2006 in a slighty extended form.
 \end{abstract}
 %%]
 
-%%[1
+%%[6
 
 %if storyAfpTRUU1
 \subsection*{Context of \thispaper\}
@@ -3457,7 +3483,7 @@ We thank both (anonymous) reviewers for their extremely valuable and helpful com
 \markboth{References}{References}
 %%]
 
-%%[1
+%%[75
 %if not onlyAbstract
 %if not asSlides && not storyPoster && not storyUniqueness
 %if not entcs && not llncs
@@ -3764,6 +3790,20 @@ We thank both (anonymous) reviewers for their extremely valuable and helpful com
 %%]
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Slides for FLOPS 2016 keynote
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%[73
+
+%%@SlidesCopingComplexity.preamble
+
+%%@Slides.titlepage
+
+%%@SlidesCopingComplexity.intro
+
+%%]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Slides for EHCStructure

@@ -228,6 +228,11 @@ $(TEXT_PDFONLY_VARIANTS) $(TEXT_DOCLTX_VARIANTS) : % : $(DOC_PREFIX)%.pdf
 #	$(MAKE) INCLUDE_DERIVED_MK=yes $(DOC_PREFIX)$@.pdf
 #	open $(DOC_PREFIX)$@.pdf
 
+text-variant-latexmk: $(TEXT_ALL_PDFONLY_DPD)
+	mkdir -p $(dir $(TEXT_BLD_PDF))
+	cd $(TEXT_TMP_VARIANT_PREFIX) ; $(LATEXMK) $(TEXT_MAIN)
+	cp $(TEXT_TMP_VARIANT_PREFIX)$(TEXT_MAIN).pdf $(TEXT_BLD_PDF)
+
 text-variant-dflt-once: $(TEXT_ALL_PDFONLY_DPD)
 	mkdir -p $(dir $(TEXT_BLD_PDF))
 	cd $(TEXT_TMP_VARIANT_PREFIX) ; $(PDFLATEX) $(TEXT_MAIN)

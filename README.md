@@ -10,3 +10,4 @@ If not specified, these are assumed to be on the same directory level as this re
 # working make targets (as of 20160103)
 * flops2016-explimpl
 * ehc-user-doc
+* slides-ehcstruct-ufmg

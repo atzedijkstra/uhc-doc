@@ -1,0 +1,106 @@
+%%[preamble
+\newcommand{\Red}[1]{{\color{uured}#1}}
+\newcommand{\Itl}[1]{\textit{#1}}
+%%]
+
+%%[intro
+\begin{frame}
+  \frametitle{\Itl{UHC}: Coping with Compiler \Itl{Complexity}}
+  
+  \begin{itemize}
+    \item \Itl{UHC}: Utrecht Haskell Compiler
+    \begin{itemize}
+      \item Haskell2010 implementation
+      \item Primarily intended for play \& experimentation: higher ranked types, partial type signatures, generic deriving, local instances, java(script) backend, ...
+      \item Inspiration for tooling
+    \end{itemize}
+    
+    \item \Itl{Complexity}: Dimensions of complexity
+    \begin{itemize}
+      \item From specification to implementation
+      \item From few to many (combined) language features
+    \end{itemize}
+    
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{From specification to implementation}
+  Outline
+
+  \begin{itemize}
+    \item Type system
+    \item Impl adds computational direction: from rel to fun
+    \item Specify as function
+    \item Specify as AG
+    \item Specify as Ruler, DSL, as beefed up AG
+    \item Embed AG (Viera)
+    \item Optimize via incrementality (Bransen)
+    \item Reasoning, CHR as DSL
+  \end{itemize}
+  
+  Theme: use DSLs to cope with complexity
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{From few to many (combined) language features}
+  UHC language feature ordering
+
+  \begin{itemize}
+    \item HM
+    \item Higher ranked
+    \item Type classes (local instances)
+    \item Code gen
+    \item ...
+    \item Module system
+    \item Libraries
+    \item Haskell (report) corner cases
+    \item Haskell2010
+  \end{itemize}
+  
+  Theme: distinguish aspects/features
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{XX}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{XX}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{XX}
+
+\end{frame}
+
+
+%%]
+
+%%[XX
+\begin{frame}
+  \frametitle{XX}
+
+  \begin{itemize}
+    \item XX
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item Complexity
+  \end{itemize}
+
+\end{frame}
+
+
+%%]

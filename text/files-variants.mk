@@ -34,7 +34,8 @@ TEXT_PRIV_VARIANTS			+= flops06-ruler-paper flops06-ruler \
 								hs09-uhcarch \
 								icfp2012-js \
 								theplan \
-								flops2016-explimpl
+								flops2016-explimpl \
+								slides-flops2016-keynote
 
 # subtext
 TEXT_SUBS					+= AGMiniPrimer StoryIntro StoryEH1 StoryEH2 StoryAFP Scratch \
@@ -44,6 +45,7 @@ TEXT_SUBS					+= AGMiniPrimer StoryIntro StoryEH1 StoryEH2 StoryAFP Scratch \
 								TopicGRIN TopicRec TopicKinds TopicDataTy TopicImpred TopicHM TopicExtRec TopicGADT TopicReflection TopicPartialTySig \
 								SlidesIntro Slides SlidesPartTySig SlidesExplImpl SlidesImpred SlidesRuler SlidesShuffle SlidesGRIN SlidesStatus SlidesEHCStructure SlidesUHCStructure SlidesUHCInternals \
 								SlidesJavascript \
+								SlidesCopingComplexity \
 								TopicImprovingUHCJS \
 								CodeFragsExplImpl \
 								ToolDocShuffle ToolDocRuler ToolDocEHC ToolDocText2Text \
@@ -87,6 +89,8 @@ TEXT_SUBS					+= AGMiniPrimer StoryIntro StoryEH1 StoryEH2 StoryAFP Scratch \
 # 66: slides: base (share)
 # 67: slides: base (share), newer UU style
 # 71: plain article: base (share) (does not work properly)
+# 74: slides: base (share), redo 20160127
+# 75: non slides: base (share), factored out from 1
 
 # ALL PRODUCTS
 # 2	: ehc book (previously phd)
@@ -145,31 +149,34 @@ TEXT_SUBS					+= AGMiniPrimer StoryIntro StoryEH1 StoryEH2 StoryAFP Scratch \
 # 69: paper (exp report for ICFP2012): "JavasScript (worktitle)"
 # 70: plain article: Improving the UHC JavaScript Backend (built upon 71, but not working)
 # 72: flops2016, llncs, explicit/implicit dicts (revised, renewed)
+# 73: flops2016 keynote about UHC
 # 77: scratch (article format)
 
 TEXT_SHUFFLE_ORDER	+= \
-		1 < 2, \
-		1 < 3, \
-		1 < 4, \
-		1 < 5, \
-		1 < 6, \
+		75 < 2, \
+		75 < 3, \
+		75 < 4, \
+		75 < 5, \
+		75 < 6, \
 		1 < 8, \
-		1 < 10, \
+		75 < 10, \
 		1 < 11, \
-		1 < 19, \
-		1 < 20, \
-		1 < 22, \
-		1 < 26, \
-		1 < 30, \
-		1 < 32, \
-		1 < 77, \
-		1 < 37, \
-		1 < 54, \
-		1 < 56, \
+		75 < 19, \
+		75 < 20, \
+		75 < 22, \
+		75 < 26, \
+		75 < 30, \
+		75 < 32, \
+		75 < 77, \
+		75 < 37, \
+		75 < 54, \
+		56 < 56, \
 		1 < 66, \
-		1 < 71, \
+		75 < 71, \
+		1 < 75, \
 		66 < 18, \
 		66 < 67, \
+		1 < 74, \
 		35, \
 		9 < 15, \
 		9 < 16, \
@@ -214,5 +221,6 @@ TEXT_SHUFFLE_ORDER	+= \
 		56 < 57, \
 		67 < 65, \
 		71 < 70, \
-		32 < 72
+		32 < 72, \
+		74 < 73
 		
