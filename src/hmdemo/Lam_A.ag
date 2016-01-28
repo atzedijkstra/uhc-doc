@@ -1,0 +1,360 @@
+MODULE {Main}{
+  main
+}{
+import           Text.ParserCombinators.UU
+import           Text.ParserCombinators.UU.Utils
+import           Text.ParserCombinators.UU.BasicInstances
+
+import           Data.Char
+import           Data.List as L
+
+import           UHC.Util.Pretty as PP
+
+import           System.Environment
+import           System.IO
+
+import           Control.Monad.State
+import           Control.Monad.Except
+}
+
+------------------------------------------------------------
+-- Utils and types for type system
+------------------------------------------------------------
+
+{
+unions [] = []
+unions [x] = x
+unions l = foldr1 L.union l
+}
+
+{
+-- Ty
+data TyVar = TV Int Int
+  deriving (Eq,Show)
+
+instance PP TyVar where
+  pp (TV i j) | j == 0    = "v" >|< i
+              | otherwise = "v" >|< i >|< "_" >|< j
+
+mkTyVar = TyVar . flip TV 0
+
+data Ty = TyInt | TyVar TyVar | TyArr Ty Ty | TyAll TyVar Ty | TyErr
+  deriving Show
+
+instance PP Ty where
+  pp t = p [] t
+    where
+      p m TyInt = pp "Int"
+      p m (TyVar v) = maybe (pp v) id $ lookup v m
+      p m (TyArr a r) = p m a >#< "->" >#< ppParens (p m r)
+      p m (TyAll v t) = "forall" >#< v' >|< "." >#< p m' t
+        where m' = (v, v') : m
+              v' = pp $ chr $ ord 'a' + length m
+      p m TyErr = pp "ERR"
+
+class Ftv x where
+  ftv :: x -> [TyVar]
+
+instance Ftv Ty where
+  ftv (TyVar v  ) = [v]
+  ftv (TyArr f a) = L.nub $ ftv f ++ ftv a
+  ftv (TyAll v t) = v `L.delete` ftv t 
+  ftv _           = []
+
+instance Ftv Env where
+  ftv env = unions [ ftv t | (_,t) <- env ]
+
+gen :: [TyVar] -> Ty -> Ty
+gen ftvenv ty = foldr TyAll ty $ ftv ty L.\\ ftvenv
+
+inst :: Ty -> Ty -> Ty
+inst (TyVar v) t = i v t
+  where 
+    i vfresh@(TV x y) (TyAll v t) = subst1 v (TyVar vfresh) $-> i (TV x (y+1)) t
+    i _               t           = t
+
+-- Subst
+type Subst = [(TyVar,Ty)]
+emptySubst = []
+
+subst1 v t = [(v,t)]
+substDel v s = filter ((v==) . fst) s
+
+class Substitutable x where
+  ($->) :: Subst -> x -> x
+
+instance Substitutable Subst where
+  s1 $-> s2 = s1 ++ s2
+
+instance Substitutable Ty where
+  s1 $-> t = case t of
+    TyVar v -> maybe t (s1 $->) $ lookup v s1
+    TyArr a r -> TyArr (s1 $-> a) (s1 $-> r)
+    TyAll v t -> TyAll v ((v `substDel` s1) $-> t)
+    _ -> t
+
+-- Nm
+type Nm = String
+
+-- Env
+type Env = [(Nm,Ty)]
+emptyEnv = []
+
+envAdd :: Nm -> Ty -> Env -> Env
+envAdd n t e = (n,t) : e
+
+envLookup :: Nm -> Env -> (Ty,Err)
+envLookup n e = maybe (TyErr,["Not introduced:" >#< n]) (\t -> (t,noErr)) $ lookup n e
+
+-- Error
+type Err = [PP_Doc]
+noErr = []
+
+-- Unification
+unify :: Ty -> Ty -> (Subst,Err)
+unify t1 t2 = either ((,) emptySubst) (flip (,) noErr) $ runExcept $ flip execStateT emptySubst $ unifyM t1 t2
+
+unifyM :: (MonadState Subst m, MonadError Err m) => Ty -> Ty -> m ()
+unifyM ty1 ty2 = u ty1 ty2
+  where
+    u TyErr _
+        = return ()
+    u _ TyErr
+        = return ()
+    u TyInt TyInt
+        = return ()
+    u (TyVar v1) (TyVar v2)
+      | v1 == v2
+        = return ()
+    u (TyVar v1) t2
+      | v1 `L.notElem` ftv t2
+        = modify (subst1 v1 t2 $->)
+      | otherwise
+        = throwError ["Occurs:" >#< (v1 >-< t2)]
+    u t1 (TyVar v2)
+      | v2 `L.notElem` ftv t1
+        = modify (subst1 v2 t1 $->)
+      | otherwise
+        = throwError ["Occurs:" >#< (v2 >-< t1)]
+    u (TyArr a1 r1) (TyArr a2 r2) = do
+        u a1 a2
+        s <- get
+        u (s $-> r1) (s $-> r2)
+    u t1 t2
+        = throwError ["Clash:" >#< (t1 >-< t2)]
+
+-- Uniq
+rulerMk1Uniq :: Int -> (Int,Int)
+rulerMk1Uniq u = (u+1,u)
+
+}
+
+------------------------------------------------------------
+-- PP
+------------------------------------------------------------
+
+{
+ppCmt x = "{-" >#< x >#< "-}"
+ppErr [] = PP.empty
+ppErr l = ppCmt $ vlist l
+}
+
+------------------------------------------------------------
+-- Parsing
+------------------------------------------------------------
+
+{
+data Opts
+  = Opts
+      {- optRunWithSharing   :: Bool
+      , optRunStrict        :: Bool
+      , optRunTrace         :: Bool
+      -}
+
+defaultOpts :: Opts
+defaultOpts
+  = Opts
+      {- optRunWithSharing   = False
+      , optRunStrict        = False
+      , optRunTrace         = False
+      -}
+
+-- Main
+-- main = return ()
+main = do
+    args <- getArgs
+    loopArgs defaultOpts args
+  where
+    loopArgs opts args = case args of
+{-
+      ("--share":a) -> do
+          loopArgs (opts {optRunWithSharing = True}) a
+      ("--strict":a) -> do
+          loopArgs (opts {optRunStrict = True}) a
+      ("--trace":a) -> do
+          loopArgs (opts {optRunTrace = True}) a
+-}
+      [a]   -> do
+          h <- openFile a ReadMode
+          inp <- scan <$> hGetContents h
+          putStrLn "-- Parsing"
+          ast <- Root_Root <$> runP pExp inp
+          let syn = wrap_Root (sem_Root ast) (Inh_Root {})
+          hClose h
+          putStrLn "-- PP"
+          putPPLn (pp_Syn_Root syn)
+          let err = err_Syn_Root syn
+          if L.null err
+            then do
+              putStrLn "-- Ty"
+              putPPLn (pp $ ty_Syn_Root syn)
+            else do
+              putStrLn "-- Errors"
+              putPPLn (vlist err)
+      _ -> return ()
+}
+
+------------------------------------------------------------
+-- Parsing
+------------------------------------------------------------
+
+{
+type EP a = P (Str Tok [Tok] LineCol) a
+
+-- Run a parser
+runP :: (Show tok) => P (Str tok [tok] LineCol) t -> [tok] -> IO t
+runP p inp = do
+    let r@(a, errors) = parse ( (,) <$> p <*> pEnd) (createStr (LineCol 0 0) inp)
+    if L.null errors then  return ()
+                     else  do putStr ("--  Correcting steps: \n")
+                              show_errors errors
+    return a
+  where show_errors :: (Show a) => [a] -> IO ()
+        show_errors = sequence_ . (map (putStrLn . show))
+
+-- libary like
+pKey :: String -> EP String
+pKey s = tokStr <$> pSym (Tok TK_Reserved s)
+
+pInt :: EP Int
+pInt = (read . tokStr) <$> pSym (Tok TK_Int "0")
+
+pVar :: EP String
+pVar = tokStr <$> pSym (Tok Tk_Var "<ident>")
+
+-- ast
+pExp :: EP Exp
+pExp = pE
+  where  pB  =    Exp_Var   <$> pVar
+             <|>  Exp_Int   <$> pInt
+             <|>  pPacked (pKey "(") (pKey ")") pE
+         pE  =    Exp_Let <$  pKey "let" <*> pVar <* pKey "=" <*> pE <* pKey "in" <*> pE
+             <|>  (\as b -> foldr Exp_Lam b as) <$> (concat <$> pList1 (pKey "\\" *> pList1 pVar <* pKey ".")) <*> pE
+             <|>  pB <**> 
+                     (   (\as f -> foldl Exp_App f as) <$> pList1 pB
+                     <|> pure id
+                     )
+}
+
+------------------------------------------------------------
+-- Scanning
+------------------------------------------------------------
+
+{
+data TokKind
+  = TK_Int
+  | Tk_Var
+  | TK_Reserved
+  deriving (Eq,Ord,Show)
+
+data Tok
+  = Tok 
+      { tokKind :: TokKind
+      , tokStr  :: String
+      }
+
+instance IsLocationUpdatedBy LineCol Tok where
+   advance lc (Tok _ s) = advance lc s
+
+instance Show Tok where
+  show (Tok k s) = s -- ++ " (" ++ show k ++ ")"
+
+instance Eq Tok where
+  Tok k1 s1 == Tok k2 s2
+    | k1 == TK_Reserved = k1 == k2 && s1 == s2
+    | otherwise         = k1 == k2
+
+instance Ord Tok where
+  Tok k1 s1 `compare` Tok k2 s2
+    | k1 == TK_Reserved && k1 == k2 = s1 `compare` s2
+    | otherwise                     = k1 `compare` k2
+
+scan :: String -> [Tok]
+scan ('\\':s)               = Tok TK_Reserved "\\" : scan s
+scan ('(':s)                = Tok TK_Reserved "(" : scan s
+scan (')':s)                = Tok TK_Reserved ")" : scan s
+scan ('=':s)                = Tok TK_Reserved "=" : scan s
+scan ('.':s)                = Tok TK_Reserved "." : scan s
+scan ('l':'e':'t':s) | isEofOrBlank s
+                            = Tok TK_Reserved "let" : scan s
+scan ('i':'n':s) | isEofOrBlank s
+                            = Tok TK_Reserved "in" : scan s
+scan (c:s)
+  | isSpace c           = scan $ dropWhile isSpace s
+  | isNumber c          = let (s1,s2) = span isNumber s
+                          in  Tok TK_Int (c:s1) : scan s2
+  | isAlpha c           = let (s1,s2) = span isAlphaNum s
+                          in  Tok Tk_Var (c:s1) : scan s2
+  | otherwise           = let (s1,s2) = break isSpace s
+                          in  Tok Tk_Var (c:s1) : scan s2
+scan []                 = []
+
+isEofOrBlank [] = True
+isEofOrBlank (' ':_) = True
+isEofOrBlank ('\n':_) = True
+}
+
+------------------------------------------------------------
+-- AG part
+------------------------------------------------------------
+
+INCLUDE "Lam_A_ruler.ag"
+
+WRAPPER Root
+
+DATA Root
+  | Root			exp	:  	Exp
+
+-- Ty
+ATTR Root [ | | ty: Ty ]
+
+-- Uniq
+ATTR Exp [ | uniq: Int | ]
+
+SEM Root
+  | Root			exp	.	uniq 	= 	0
+  
+-- Env
+SEM Root
+  | Root			exp	.	env		= 	emptyEnv
+  						.	subst	=	emptySubst
+
+-- Error
+ATTR Exp Root [ | | err USE {++} {noErr} : Err ]
+
+SEM Exp
+  | Var				lhs	.	err		=	@errLookup
+  | App				lhs	.	err		=	@errUnify ++ @f.err ++ @a.err
+
+-- PP
+ATTR Exp Root [ | | pp: PP_Doc ]
+
+SEM Root
+  | Root			lhs	.	pp		=	@exp.pp
+
+SEM Exp
+  | Int				lhs	.	pp		= 	pp @i
+  | Var				lhs	.	pp		=	pp @n >|< ppErr @errLookup
+  | App				lhs	.	pp		=	@f.pp >#< ppParens @a.pp >|< ppErr @errUnify
+  | Lam				lhs	.	pp		=	"\\" >|< @n >|< "." >|< @exp.pp
+  | Let				lhs	.	pp		=	"let" >#< @n >#< (":" >#< pp @pty_ >-< "=" >#< @exp.pp) >#< "in" >-< @body.pp

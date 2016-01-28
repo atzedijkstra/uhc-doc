@@ -439,7 +439,8 @@ text-variant-improving-uhc-js:
 	  text-variant-dflt-bib
 
 text-variant-icfp2012-js:
-	$(MAKE) TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC=no \
+	$(MAKE) \
+	  TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC=no \
 	  INCLUDE_DERIVED_MK=yes \
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--unset=yesBeamer --set=icfp2012 --set=kscode --set=acm --set=blockstyle --set=asArticle --set=dictaat" \
 	  TEXT_SHUFFLE_VARIANT=69 \
@@ -451,8 +452,9 @@ text-variant-flops2016-explimpl:
 	  TEXT_SHUFFLE_VARIANT=72 \
 	  text-variant-dflt-bib
 
-text-variant-slides-flops2016-keynote:
+text-variant-slides-flops2016-keynote: $(HMDEMO_A_MAIN_BLD_EXEC)
 	$(MAKE) \
+	  TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX=yes \
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--set=yesBeamer --set=flops2016 --set=storyKeynoteUHC --unset=asArticle --set=asSlides --unset=useHyperref --unset=refToPDF" \
 	  TEXT_SHUFFLE_VARIANT=73 \
 	  text-variant-latexmk

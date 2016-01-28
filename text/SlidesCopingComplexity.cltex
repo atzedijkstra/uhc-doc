@@ -1,6 +1,22 @@
 %%[preamble
 \newcommand{\Red}[1]{{\color{uured}#1}}
 \newcommand{\Itl}[1]{\textit{#1}}
+
+%format tvara	= "\alpha"
+%format tvarb	= "\beta"
+%format tvar	= tvara
+%format ty		= "\tau"
+%format Ty		= ty
+%format pty		= "\sigma"
+%format PTy		= pty
+%format env		= "\Gamma"
+%format Env		= env
+%format exp		= "e"
+%format Exp		= exp
+%format subst	= "\theta"
+%format Subst	= subst
+
+%format TyInt	= "Int"
 %%]
 
 %%[intro
@@ -37,6 +53,8 @@
     \item Specify as AG
     \item Specify as Ruler, DSL, as beefed up AG
     \item Embed AG (Viera)
+    \item Issue: repr subst
+    \item Issue: free vars, leading to
     \item Optimize via incrementality (Bransen)
     \item Reasoning, CHR as DSL
   \end{itemize}
@@ -70,17 +88,58 @@
 \begin{frame}
   \frametitle{XX}
 
+%%[[wrap=safecode
+   exp     ::=     i                       ^^ -- base: int
+           |       n                       ^^ -- name reference
+           |       exp ^^ exp              ^^ -- application
+           |       \n.exp                  ^^ -- abstraction
+           |       let n = exp in exp      ^^ -- let binding
+   ty      ::=     Int
+           |       ty -> ty
+           |       tvar
+   pty     ::=     ty
+           |       forall tvar . pty
+%%]]
+
 \end{frame}
 
 
 \begin{frame}
   \frametitle{XX}
 
+  {\small
+  \rulerCmdUse{Lam.D.exp.onslide}
+  }
+
 \end{frame}
 
 
 \begin{frame}
   \frametitle{XX}
+
+  {\small
+  \rulerCmdUse{Lam.D.exp.gen}
+  }
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{XX}
+
+  {\small
+  \rulerCmdUse{Lam.SD.exp.onslide}
+  }
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{XX}
+
+  {\small
+  \rulerCmdUse{Lam.A.exp.onslide}
+  }
 
 \end{frame}
 

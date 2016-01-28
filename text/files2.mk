@@ -87,6 +87,7 @@ TEXT_SUBS_DRV_TEX			:= $(if $(TEXT_CFG_TEXT_INCLUDES_PREV_RULER_TEX),$(RULER_12_
 TEXT_SUBS_ASIS_DRV			:= $(patsubst $(TEXT_SRC_PREFIX)%.tex,$(TEXT_TMP_VARIANT_PREFIX)%.tex,$(TEXT_SUBS_ASIS_SRC))
 
 TEXT_INCL_LIST_TEX			:= $(TEXT_TMP_VARIANT_PREFIX)InclList.tex
+TEXT_INCL_LIST_LTEX			:= $(TEXT_TMP_VARIANT_PREFIX)InclList.ltex
 TEXT_GEN_BY_RULER_TABLE_TEX	:= $(TEXT_TMP_VARIANT_PREFIX)GenByRuler.tex
 
 TEXT_BIB1_SRC				:= $(TEXT_SRC_PREFIX)LitAdm.bib
@@ -169,17 +170,25 @@ TEXT_TRIGGER_BLD			:=	$(TEXT_ALL_SRC) \
 								$(RULER2_RULES_SRC_RL2) \
 								$(TEXT_ALL_MK_FILES) \
 								$(FIGS_ALL_SRC) \
-								$(EXPERIMENTS_SUBST_ALL_SRC)
+								$(EXPERIMENTS_SUBST_ALL_SRC) \
+								$(HMDEMO_LAM_ALL_SRC)
 
-# all deriveds (as counting for make dependencies)
-TEXT_ALL_PDFONLY_DPD		:= $(TEXT_MAIN_DRV_TEX) $(TEXT_SUBS_DRV_TEX) $(TEXT_MAIN_DRV_STY) \
+# all deriveds tex (as counting for make dependencies)
+TEXT_ALL_TEX_PDFONLY_DPD	:= $(TEXT_MAIN_DRV_TEX) $(TEXT_SUBS_DRV_TEX) $(TEXT_MAIN_DRV_STY) \
 								$(TEXT_SUBS_ASIS_DRV) $(FIGS_XFIG_DRV_TEX) $(FIGS_XFIG_DRV_PDF) $(FIGS_EPS_DRV_PDF) $(FIGS_DOT_DRV_PDF) $(FIGS_ASIS_DRV) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_HIDE_TEX),$(TEXT_HIDE_DRV_TEX))  \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_RULER_UX_TEX),$(TEXT_RULEUX_ALL_DRV_TEX) $(TEXT_RULEUX_ALL_DRV_TEX) $(TEXT_RULEX_ALL_DRV_TEX)) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_RULER_GENBY_TEX),$(TEXT_GEN_BY_RULER_TABLE_TEX)) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_RULER_INF2PS_TEX),$(TEXT_INF2PS_ALL_DRV_TEX)) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_EXPERIMENTS_TEX),$(TEXT_EXPERIMENTS_SUBST_ALL_DRV_TEX)) \
-								$(TEXT_INCL_LIST_TEX)
+								$(TEXT_INCL_LIST_TEX) 
+
+# all deriveds ltex (as counting for make dependencies)
+TEXT_ALL_LTEX_PDFONLY_DPD	:= $(if $(TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX),$(HMDEMO_LAM_RUL_DRV_LTEX)) \
+								$(TEXT_INCL_LIST_LTEX)
+
+# all deriveds (as counting for make dependencies)
+TEXT_ALL_PDFONLY_DPD		:= $(TEXT_ALL_TEX_PDFONLY_DPD) $(TEXT_ALL_LTEX_PDFONLY_DPD)
 
 #omitted (because ruler has its own repo etc): $(TEXT_RULER2_DEMO_ALL_DRV_TEX) $(TEXT_RULER2_DEMO_TEX) $(TEXT_RULER2_DEMO_STUFF)
 
@@ -229,6 +238,7 @@ $(TEXT_PDFONLY_VARIANTS) $(TEXT_DOCLTX_VARIANTS) : % : $(DOC_PREFIX)%.pdf
 #	open $(DOC_PREFIX)$@.pdf
 
 text-variant-latexmk: $(TEXT_ALL_PDFONLY_DPD)
+	echo $(TEXT_ALL_PDFONLY_DPD)
 	mkdir -p $(dir $(TEXT_BLD_PDF))
 	cd $(TEXT_TMP_VARIANT_PREFIX) ; $(LATEXMK) $(TEXT_MAIN)
 	cp $(TEXT_TMP_VARIANT_PREFIX)$(TEXT_MAIN).pdf $(TEXT_BLD_PDF)
@@ -309,7 +319,7 @@ $(TEXT_MAIN_DRV_LTEX) : $(TEXT_MAIN_SRC_CLTEX) $(TEXT_SUBS_SHUFFLE) $(SHUFFLE) $
 	mkdir -p $(@D)
 	$(SHUFFLE) --gen=$(TEXT_SHUFFLE_VARIANT) --plain --lhs2tex=no --hidedest=appx=$(TEXT_HIDE_DRV_TXT) --order="$(TEXT_SHUFFLE_ORDER)" $< $(TEXT_SUBS_SHUFFLE_ALIAS) > $@
 
-$(TEXT_MAIN_DRV_TEX) : %.tex : %.ltex
+$(TEXT_MAIN_DRV_TEX) : %.tex : %.ltex $(TEXT_INCL_LIST_LTEX)
 	$(SUBST_EHC) $< \
 	  | $(SUBST_BAR_IN_TT) \
 	  | $(LHS2TEX_CMD) $(LHS2TEX_OPTS_TEXT_CONFIG) $(LHS2TEX_OPTS_VARIANT_CONFIG) $(LHS2TEX_OPTS_POLY) \
@@ -424,6 +434,14 @@ $(TEXT_INCL_LIST_TEX): $(TEXT_ALL_MK_FILES)
 	            )      ) ; \
 	  do \
 	    echo "\\input" $$f ; \
+	  done \
+	) > $@
+
+$(TEXT_INCL_LIST_LTEX): $(if $(TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX),$(HMDEMO_LAM_RUL_DRV_LTEX))
+	@(for f in $(sort $(notdir $? \
+	            )      ) ; \
+	  do \
+	    echo "%include" $$f ; \
 	  done \
 	) > $@
 

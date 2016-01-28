@@ -27,44 +27,20 @@ help: explanation
 include mk/config.mk
 include $(UHC_TOP_PREFIX)mk/config.mk
 
-### BEGIN of Ruler1
-# This definitely should not remain here....!!!!
-# Ruler1, will be obsolete until all type rules are specified with Ruler2 (currently not in Explicit/implicit story)
-RULER1				:= bin/ruler1$(EXEC_SUFFIX)
-RULER1_DIR			:= ruler1
-RULER1_MAIN			:= Ruler
-RULER1_AG			:= $(RULER1_MAIN).ag
-RULER1_HS			:= $(RULER1_AG:.ag=.hs)
-RULER1_DERIV		:= $(RULER1_DIR)/$(RULER1_HS)
-
-RULER1_SRC			:= $(RULER1_DIR)/$(RULER1_AG)
-
-ruler1: $(RULER1)
-
-$(RULER1): $(RULER1_DIR)/$(RULER1_AG) $(LIB_EH_UTIL_INS_FLAG)
-	cd $(RULER1_DIR) && \
-	$(AGC) -csdfr --module=Main `basename $<` && \
-	$(GHC) -XFlexibleContexts --make $(GHC_OPTS) $(RULER1_HS) -o ../$@ && \
-	$(STRIP) ../$@
-### END of Ruler1
-
 include src/files.mk
 include $(UHC_TOP_PREFIX)src/files.mk
 include $(UHCRULES_TOP_PREFIX)src/files.mk
 include $(UHC_SRC_PREFIX)ehc/shared.mk
-#include $(MK_PREFIX)functions.mk
 include $(UHCDOC_MK_PREFIX)shared.mk
 
-#include $(SRC_PREFIX)libutil/files.mk
 include $(UHCDOC_SRC_PREFIX)text2text/files.mk
-#include $(SRC_PREFIX)ruler2/files.mk
 include $(UHC_SRC_PREFIX)ehc/variant.mk
-#include $(SRC_PREFIX)gen/files.mk
 include $(UHC_SRC_PREFIX)ehc/files1.mk
 
-#include $(SRC_PREFIX)ehc/files2.mk
-include figs/files.mk
 include text/files1.mk
+include $(UHCDOC_SRC_PREFIX)hmdemo/files.mk
+
+include figs/files.mk
 include text/files-variants.mk
 include $(wildcard text/files1-*.mk)
 include text/files2.mk
