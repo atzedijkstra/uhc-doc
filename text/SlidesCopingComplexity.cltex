@@ -310,13 +310,14 @@ Occurs: v8
 
 %format Ty		= "Ty"
 %format Env		= "Env"
+%format env		= "env"
 %format Exp		= "Exp"
 %format Subst	= "Subst"
 %format subst	= "subst"
 
 %format TyInt	= "TyInt"
 
-%format $->		= $ "_{" Subst_ "}"
+%format $->		= $ "_{\theta}"
 
 \begin{frame}
   \frametitle{Implementation}
@@ -335,6 +336,63 @@ algoW :: Env -> (Subst, Int) -> Exp -> (Ty, (Subst, Int), Err)
 \item |Subst, Subst_|: substitution, mapping from type variables to types
 \item |Err|: errors
 \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation, purely functional}
+
+{\small
+%%[[wrap=safecode
+algoW :: Env -> (Subst, Int) -> Exp -> (Ty, (Subst, Int), Err)
+algoW env st (Exp_App f a) =
+    (s4 $-> v, (s4, uniq st3), ef ++ ea ++ eu)
+  where 
+    (tf,  st1, ef)  = algoW env st   f                  ^^ -- recurse for function
+    (ta,  st2, ea)  = algoW env st1  a                  ^^ -- recurse for argument
+    (v,   st3)      = fresh  st2                        ^^ -- new fresh type var
+    s3              = subst  st3                        ^^ -- get current subst
+    (su,  eu)       = unify  (s3 $-> tf)                ^^ -- apply subst, unify
+                             (TyArr ta v)
+    s4              = su $-> s3
+
+data TyVar  = TV Int ...
+data Ty     = TyInt | TyVar TyVar | TyArr Ty Ty | ...
+data Exp    = Exp_App  Exp Exp | ...
+type Env    = [(String,Ty)]
+type Subst  = [(TyVar,Ty)]
+class Substitutable x where {($->) :: Subst -> x -> x}
+%%]]
+}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+  
+  What have we done so far?
+
+  \begin{itemize}
+    \item Functional implementation
+    \begin{itemize}
+      \item Directly related to declarative semantics via algorithmic version
+    \end{itemize}
+    \item But...
+    \begin{itemize}
+      \item Many details left out...
+      \item Actual implementation must do more: parser, scanner, ...
+      \item Approx 300 LOC (without comment)
+    \end{itemize}
+    
+    \item And...
+    \begin{itemize}
+      \item We are not done yet...
+      \item Pretty printing
+      % \item Error gathering
+    \end{itemize}
+  \end{itemize}
 
 \end{frame}
 
@@ -366,13 +424,6 @@ algoW
 And (finally) some implementation code...
 
 %%[[wrap=safecode
-data TyVar  = TV Int ...
-data Ty     = TyInt | TyVar TyVar | TyArr Ty Ty | ...
-data Exp    = Exp_App  Exp Exp | ...
-type Env    = [(String,Ty)]
-type Subst  = [(TyVar,Ty)]
-class Substitutable x where {($->) :: Subst -> x -> x}
-
 algoW (Exp_App f a) = do
   tf <- algoW f                 ^^ -- recurse for function
   ta <- algoW a                 ^^ -- recurse for argument
@@ -385,33 +436,6 @@ algoW (Exp_App f a) = do
 
 \end{frame}
 
-
-\begin{frame}
-  \frametitle{Moments of reflection}
-  
-  What have we done so far?
-
-  \begin{itemize}
-    \item Functional implementation
-    \begin{itemize}
-      \item Directly related to declarative semantics via algorithmic version
-    \end{itemize}
-    \item But...
-    \begin{itemize}
-      \item Many details left out...
-      \item Actual implementation includes: parser, scanner, ...
-      \item Approx 300 LOC (without comment)
-    \end{itemize}
-    
-    \item And...
-    \begin{itemize}
-      \item We are not done yet...
-      \item Pretty printing
-      \item Error gathering
-    \end{itemize}
-  \end{itemize}
-
-\end{frame}
 
 %}
 

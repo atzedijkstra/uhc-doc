@@ -82,6 +82,9 @@ substDel v s = filter ((v==) . fst) s
 class Substitutable x where
   ($->) :: Subst -> x -> x
 
+instance Substitutable Env where
+  s $-> env = map (\(n,t) -> (n, s $-> t)) env
+
 instance Substitutable Subst where
   s1 $-> s2 = s1 ++ s2
 
@@ -206,13 +209,23 @@ main = do
           e <- runP pExp inp
           hClose h
 %%[[1
-          case runExcept $ flip evalStateT (emptySubst, 0::Int) $ flip runReaderT emptyEnv $ algoW e of
+          case algow emptyEnv (emptySubst, 0) e of
+            (ty, _, err)
+              | L.null err -> do
+                  putStrLn "-- Ty"
+                  putPPLn (pp ty)
+              | otherwise -> do
+                  putStrLn "-- Errors"
+                  putPPLn (vlist err)
+{-
+          case runExcept $ flip evalStateT (emptySubst, 0::Int) $ flip runReaderT emptyEnv $ algowM e of
             Left err -> do
               putStrLn "-- Errors"
               putPPLn (vlist err)
             Right (ty :: Ty) -> do
               putStrLn "-- Ty"
               putPPLn (pp ty)
+-}
 %%][2
           let ast = Root_Root e
           let syn = wrap_Root (sem_Root ast) (Inh_Root {})
@@ -330,7 +343,7 @@ isEofOrBlank (' ':_) = True
 isEofOrBlank ('\n':_) = True
 %%]
 
-%%[1.algoWinHs hs
+%%[1.algowMinHs hs
 ------------------------------------------------------------
 -- Algo W in Haskell
 ------------------------------------------------------------
@@ -341,8 +354,41 @@ data Exp = Exp_App  Exp Exp
          | Exp_Let  String Exp Exp
          | Exp_Var  String
 
-algoW :: (MonadReader Env m, MonadState (Subst, Int) m, MonadError Err m, Monad m) => Exp -> m Ty
-algoW e = w e
+algow :: Env -> (Subst, Int) -> Exp -> (Ty, (Subst, Int), Err)
+algow env st e = w env st e
+  where 
+    w env st (Exp_Int _) = (TyInt, st, noErr)
+    
+    w env st (Exp_Var n) = case lookup n env of
+      Just t -> (inst v (s $-> t), st', noErr)
+        where (v,st') = fresh st
+              s = subst st'
+      _ -> (TyErr, st, ["Not introduced:" >#< n])
+    
+    w env st (Exp_App f a) = (s4 $-> v, (s4, uniq st3), ef ++ ea ++ eu)
+      where (tf, st1, ef) = w env st  f
+            (ta, st2, ea) = w env st1 a
+            (v, st3) = fresh st2
+            s3 = subst st3
+            (su, eu) = unify (s3 $-> tf) (TyArr ta v)
+            s4 = su $-> s3
+
+    w env st (Exp_Lam n b) = (TyArr (s2 $-> v) tr, st2, eb)
+      where (v, st1) = fresh st
+            (tr, st2, eb) = w (envAdd n v env) st1 b
+            s2 = subst st2
+
+    w env st (Exp_Let n e b) = (tb, st2, ee ++ eb)
+      where (te, st1, ee) = w env st e
+            s1 = subst st1
+            (tb, st2, eb) = w (envAdd n (gen (ftv $ s1 $-> env) te) env) st1 b
+
+    fresh (s,u) = (mkTyVar u, (s,u+1))
+    subst = fst
+    uniq = snd
+
+algowM :: (MonadReader Env m, MonadState (Subst, Int) m, MonadError Err m, Monad m) => Exp -> m Ty
+algowM e = w e
   where
     w (Exp_Int _) =
       return TyInt
@@ -357,24 +403,25 @@ algoW e = w e
         _ -> throwError ["Not introduced:" >#< n]
 
     w (Exp_App f a) = do
-      ft <- w f
-      at <- w a
+      tf <- w f
+      ta <- w a
       s <- subst
       v <- fresh
-      unif (s $-> ft) (TyArr at v)
+      unif (s $-> tf) (TyArr ta v)
       s <- subst
       return $ s $-> v
 
     w (Exp_Lam n b) = do
       v <- fresh
       local (envAdd n v) $ do
-        rt <- w b
+        tr <- w b
         s <- subst
-        return $ TyArr (s $-> v) rt
+        return $ TyArr (s $-> v) tr
 
     w (Exp_Let n e b) = do
-      et <- w e
-      local (\env -> envAdd n (gen (ftv env) et) env) $ do
+      te <- w e
+      s <- subst
+      local (\env -> envAdd n (gen (ftv $ s $-> env) te) env) $ do
         w b
 
     fresh = do
@@ -388,7 +435,7 @@ algoW e = w e
       where (su,e) = unify t1 t2
 %%]
 
-%%[2 -1.algoWinHs ag import(Lam_A_ruler)
+%%[2 -1.algowMinHs ag import(Lam_A_ruler)
 ------------------------------------------------------------
 -- AG part
 ------------------------------------------------------------

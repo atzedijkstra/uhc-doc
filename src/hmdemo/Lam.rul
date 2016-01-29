@@ -101,8 +101,6 @@ ruleset exp.core scheme exp "Rules for Ty of Exp" =
       judge V : exp
         | ty = ty.n
       judge G : gen = env :- ty.n : pty
-      -- judge B : exp
-      --   | env = (n :-> (retain genty env ty.n), env)
       ---
     view A =
       judge V : exp
@@ -111,6 +109,8 @@ ruleset exp.core scheme exp "Rules for Ty of Exp" =
       judge B : exp
         | subst.inh = subst.n
         | subst.syn = subst.e
+      judge G : gen
+        | env = subst.n $-> env
       ---
       judge R : exp
         | subst.syn = subst.e
@@ -222,7 +222,7 @@ relation gen =
     judgespec env :- t : tgen
     judgeuse tex env :-.."gen" t : tgen
   view A =
-    judgeuse ag  (retain tgen) `=` gen (ftv env) (t)
+    judgeuse ag  (retain tgen) `=` gen (ftv (env)) (t)
 
 relation inst =
   view SD =
