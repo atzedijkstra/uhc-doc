@@ -6,6 +6,7 @@
 %format tvarb	= "\beta"
 %format tvar	= tvara
 %format ty		= "\tau"
+%format tya		= ty "_a"
 %format Ty		= ty
 %format pty		= "\sigma"
 %format PTy		= pty
@@ -86,62 +87,333 @@
 
 
 \begin{frame}
-  \frametitle{XX}
+  \frametitle{Today's plan}
+  
+  \begin{itemize}
+  \item Write a smallish UHC
+  \item Observe what is or will be problematic
+  \item Solutions tried for UHC \& lessons learned
+  \end{itemize}
 
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demo language}
+
+\begin{itemize}
+\item Basic functional language
 %%[[wrap=safecode
    exp     ::=     i                       ^^ -- base: int
            |       n                       ^^ -- name reference
            |       exp ^^ exp              ^^ -- application
            |       \n.exp                  ^^ -- abstraction
            |       let n = exp in exp      ^^ -- let binding
-   ty      ::=     Int
-           |       ty -> ty
-           |       tvar
-   pty     ::=     ty
-           |       forall tvar . pty
+%%]]
+
+\item With a Hindley-Milner type system
+%%[[wrap=safecode
+   ty      ::=     Int | ty -> ty | tvar
+   pty     ::=     ty | forall tvar . pty
+%%]]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demo language}
+
+\begin{itemize}
+\item Language example
+%%[[wrap=safecode
+let id = \x.x in
+let id2 = id id id id in
+id id2 (id 5)
+%%]]
+
+\item Desired output and results
+  \begin{itemize}
+  \item Some analysis for some semantics: type
+  \item Some error reporting: name errors, type errors
+  \item Some code generation using analysis results: pretty printing
+  \end{itemize}
+
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demo language}
+
+\begin{itemize}
+\item Compiler output
+
+%%[[wrap=verbatimsmall
+-- PP
+let id : forall a. a -> (a)
+       = \x.x in
+let id2 : forall a. a -> (a)
+        = id (id) (id) (id) in
+id (id2) (id (5))
+-- Ty
+Int
+%%]]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demo language}
+
+\begin{itemize}
+\item Language example with a name error
+%%[[wrap=safecode
+let id = \x.y in
+f 4
+%%]]
+
+\item Compiler output
+
+%%[[wrap=verbatimsmall
+-- PP
+let id : forall a. a -> (ERR)
+       = \x.y{- Not introduced: y -} in
+f{- Not introduced: f -} (4)
+-- Errors
+Not introduced: y
+Not introduced: f
+%%]]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demo language}
+
+\begin{itemize}
+\item Language example with typing error (Y fixpoint combinator)
+%%[[wrap=safecode
+\w . (\x.w(x x)) (\x.w(x x))
+%%]]
+
+\item Compiler output
+
+%%[[wrap=verbatimsmall
+-- PP
+\w.\x.w (x (x){- Occurs: v2
+                         v2 -> (v5) -}
+        ) (\x.w (x (x){- Occurs: v8
+                                 v8 -> (v11) -}
+                )
+          )
+-- Errors
+Occurs: v2
+        v2 -> (v5)
+Occurs: v8
+        v8 -> (v11)
+%%]]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Writing a compiler for the demo language}
+  
+  What needs to be done?
+  \begin{itemize}
+  \item Specify the semantics (here: only type, not operational)
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Type semantics, declarative}
+
+  Hindley-Milner type system (HM), declarative specification for type system
+  {\small
+  \rulerCmdUse{Lam.D.exp.onslide}
+  }
+  
+  + generalization, instantiation ...
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Type semantics, declarative}
+
+  Generalization, instantiation
+  {\small
+  \rulerCmdUse{Lam.D.exp.gen}
+  }
+  
+  \pause
+  Can we directly implement this?
+  \begin{itemize}
+  \item When to apply rules?
+  \item How to solve equations implied implicitly by multiple occurrences of meta variables (like |tya|)?
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Type semantics, syntax directed}
+
+  For HM this is well known\footnote{\url{https://en.wikipedia.org/wiki/Hindley-Milner_type_system}}
+  {\small
+  \rulerCmdUse{Lam.SD.exp.onslide.sd}
+  }
+  
+  Add and allow for computational direction
+  \begin{itemize}
+  \item When to apply rules? Make it syntax directed
+  \item How to solve equations? Algorithm W (for example), unification, type variables \& substitution
+  \end{itemize}
+  
+  But...
+  \pause
+  for an implementation more and more design, algorithmic, and engineering decisions have to be made
+  
+  %Observation: 
+  
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Type semantics, algorithmic}
+  
+  Algorithm W
+
+  {\small
+  \rulerCmdUse{Lam.A.exp.onslide}
+  }
+
+  Ready to implement...
+  
+\end{frame}
+
+%{
+
+%format Ty_		= ty
+%format Env_	= env
+%format Exp_	= exp
+%format Subst_	= subst
+%format subst_	= subst
+
+%format Ty		= "Ty"
+%format Env		= "Env"
+%format Exp		= "Exp"
+%format Subst	= "Subst"
+%format subst	= "subst"
+
+%format TyInt	= "TyInt"
+
+%format $->		= $ "_{" Subst_ "}"
+
+\begin{frame}
+  \frametitle{Implementation}
+
+Haskell implementation of Algorithm W
+
+%%[[wrap=safecode
+algoW :: Env -> (Subst, Int) -> Exp -> (Ty, (Subst, Int), Err)
+%%]]
+
+\begin{itemize}
+\item |Env, Env_|: scoped environment, mapping from identifiers to types
+\item |Exp, Exp_|: term AST
+\item |Ty, Ty_|: types
+\item |Int|: unique number generation, for fresh type variables
+\item |Subst, Subst_|: substitution, mapping from type variables to types
+\item |Err|: errors
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation}
+
+Get rid of some functional plumbing by using monads
+
+\begin{itemize}
+\item Monadic interface of Algorithm W
+%%[[wrap=safecode
+algoW
+      ::  (  MonadReader Env m                  ^^ -- scoped name mapping
+          ,  MonadState (Subst, Int) m          ^^ -- global state
+          ,  MonadError Err m                   ^^ -- error handling
+          ) => Exp -> m Ty
+%%]]
+\end{itemize}
+
+(Alternatively we might use |MonadWriter| for gathering errors instead of stopping at first error occurrence)
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation}
+
+And (finally) some implementation code...
+
+%%[[wrap=safecode
+data TyVar  = TV Int ...
+data Ty     = TyInt | TyVar TyVar | TyArr Ty Ty | ...
+data Exp    = Exp_App  Exp Exp | ...
+type Env    = [(String,Ty)]
+type Subst  = [(TyVar,Ty)]
+class Substitutable x where {($->) :: Subst -> x -> x}
+
+algoW (Exp_App f a) = do
+  tf <- algoW f                 ^^ -- recurse for function
+  ta <- algoW a                 ^^ -- recurse for argument
+  s <- subst                    ^^ -- get current subst
+  v <- fresh                    ^^ -- new fresh type var
+  unif (s $-> tf) (TyArr ta v)  ^^ -- apply subst, unify
+  s <- subst
+  return $ s $-> v              ^^ -- apply subst, return
 %%]]
 
 \end{frame}
 
 
 \begin{frame}
-  \frametitle{XX}
+  \frametitle{Moments of reflection}
+  
+  What have we done so far?
 
-  {\small
-  \rulerCmdUse{Lam.D.exp.onslide}
-  }
-
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{XX}
-
-  {\small
-  \rulerCmdUse{Lam.D.exp.gen}
-  }
-
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{XX}
-
-  {\small
-  \rulerCmdUse{Lam.SD.exp.onslide}
-  }
+  \begin{itemize}
+    \item Functional implementation
+    \begin{itemize}
+      \item Directly related to declarative semantics via algorithmic version
+    \end{itemize}
+    \item But...
+    \begin{itemize}
+      \item Many details left out...
+      \item Actual implementation includes: parser, scanner, ...
+      \item Approx 300 LOC (without comment)
+    \end{itemize}
+    
+    \item And...
+    \begin{itemize}
+      \item We are not done yet...
+      \item Pretty printing
+      \item Error gathering
+    \end{itemize}
+  \end{itemize}
 
 \end{frame}
 
-
-\begin{frame}
-  \frametitle{XX}
-
-  {\small
-  \rulerCmdUse{Lam.A.exp.onslide}
-  }
-
-\end{frame}
+%}
 
 
 %%]

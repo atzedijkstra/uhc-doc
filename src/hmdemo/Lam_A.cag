@@ -1,33 +1,32 @@
-MODULE {Main}{
-  main
-}{
-import           Text.ParserCombinators.UU
-import           Text.ParserCombinators.UU.Utils
-import           Text.ParserCombinators.UU.BasicInstances
+%%[1 module Main
+%%]
 
-import           Data.Char
-import           Data.List as L
+%%[1 hs import(Text.ParserCombinators.UU, Text.ParserCombinators.UU.Utils, Text.ParserCombinators.UU.BasicInstances)
+%%]
 
-import           UHC.Util.Pretty as PP
+%%[1 hs import(Data.Char, Data.List as L)
+%%]
 
-import           System.Environment
-import           System.IO
+%%[1 hs import(UHC.Util.Pretty as PP)
+%%]
 
-import           Control.Monad.State
-import           Control.Monad.Except
-}
+%%[1 hs import(System.Environment, System.IO)
+%%]
 
+%%[1 hs import(Control.Monad.State, Control.Monad.Reader, Control.Monad.Except)
+%%]
+
+%%[1 hs
 ------------------------------------------------------------
 -- Utils and types for type system
 ------------------------------------------------------------
 
-{
 unions [] = []
 unions [x] = x
 unions l = foldr1 L.union l
-}
+%%]
 
-{
+%%[1 hs
 -- Ty
 data TyVar = TV Int Int
   deriving (Eq,Show)
@@ -147,23 +146,23 @@ unifyM ty1 ty2 = u ty1 ty2
 rulerMk1Uniq :: Int -> (Int,Int)
 rulerMk1Uniq u = (u+1,u)
 
-}
+%%]
 
+%%[1 hs
 ------------------------------------------------------------
 -- PP
 ------------------------------------------------------------
 
-{
 ppCmt x = "{-" >#< x >#< "-}"
 ppErr [] = PP.empty
 ppErr l = ppCmt $ vlist l
-}
+%%]
 
+%%[1 hs
 ------------------------------------------------------------
--- Parsing
+-- Options
 ------------------------------------------------------------
 
-{
 data Opts
   = Opts
       {- optRunWithSharing   :: Bool
@@ -178,6 +177,12 @@ defaultOpts
       , optRunStrict        = False
       , optRunTrace         = False
       -}
+%%]
+
+%%[1 hs export(main)
+------------------------------------------------------------
+-- Main
+------------------------------------------------------------
 
 -- Main
 -- main = return ()
@@ -198,9 +203,19 @@ main = do
           h <- openFile a ReadMode
           inp <- scan <$> hGetContents h
           putStrLn "-- Parsing"
-          ast <- Root_Root <$> runP pExp inp
-          let syn = wrap_Root (sem_Root ast) (Inh_Root {})
+          e <- runP pExp inp
           hClose h
+%%[[1
+          case runExcept $ flip evalStateT (emptySubst, 0::Int) $ flip runReaderT emptyEnv $ algoW e of
+            Left err -> do
+              putStrLn "-- Errors"
+              putPPLn (vlist err)
+            Right (ty :: Ty) -> do
+              putStrLn "-- Ty"
+              putPPLn (pp ty)
+%%][2
+          let ast = Root_Root e
+          let syn = wrap_Root (sem_Root ast) (Inh_Root {})
           putStrLn "-- PP"
           putPPLn (pp_Syn_Root syn)
           let err = err_Syn_Root syn
@@ -211,14 +226,15 @@ main = do
             else do
               putStrLn "-- Errors"
               putPPLn (vlist err)
+%%]]
       _ -> return ()
-}
+%%]
 
+%%[1 hs
 ------------------------------------------------------------
 -- Parsing
 ------------------------------------------------------------
 
-{
 type EP a = P (Str Tok [Tok] LineCol) a
 
 -- Run a parser
@@ -254,13 +270,13 @@ pExp = pE
                      (   (\as f -> foldl Exp_App f as) <$> pList1 pB
                      <|> pure id
                      )
-}
+%%]
 
+%%[1 hs
 ------------------------------------------------------------
 -- Scanning
 ------------------------------------------------------------
 
-{
 data TokKind
   = TK_Int
   | Tk_Var
@@ -312,13 +328,70 @@ scan []                 = []
 isEofOrBlank [] = True
 isEofOrBlank (' ':_) = True
 isEofOrBlank ('\n':_) = True
-}
+%%]
 
+%%[1.algoWinHs hs
+------------------------------------------------------------
+-- Algo W in Haskell
+------------------------------------------------------------
+
+data Exp = Exp_App  Exp Exp
+         | Exp_Int  Int
+         | Exp_Lam  String Exp
+         | Exp_Let  String Exp Exp
+         | Exp_Var  String
+
+algoW :: (MonadReader Env m, MonadState (Subst, Int) m, MonadError Err m, Monad m) => Exp -> m Ty
+algoW e = w e
+  where
+    w (Exp_Int _) =
+      return TyInt
+
+    w (Exp_Var n) = do
+      env <- ask
+      case lookup n env of
+        Just t -> do
+          v <- fresh
+          s <- subst
+          return $ inst v (s $-> t)
+        _ -> throwError ["Not introduced:" >#< n]
+
+    w (Exp_App f a) = do
+      ft <- w f
+      at <- w a
+      s <- subst
+      v <- fresh
+      unif (s $-> ft) (TyArr at v)
+      s <- subst
+      return $ s $-> v
+
+    w (Exp_Lam n b) = do
+      v <- fresh
+      local (envAdd n v) $ do
+        rt <- w b
+        s <- subst
+        return $ TyArr (s $-> v) rt
+
+    w (Exp_Let n e b) = do
+      et <- w e
+      local (\env -> envAdd n (gen (ftv env) et) env) $ do
+        w b
+
+    fresh = do
+      (s,u) <- get
+      put (s,u+1)
+      return $ mkTyVar u
+
+    subst = gets fst
+    
+    unif t1 t2 = if L.null e then modify (\(s,u) -> (su $-> s, u)) else throwError e
+      where (su,e) = unify t1 t2
+%%]
+
+%%[2 -1.algoWinHs ag import(Lam_A_ruler)
 ------------------------------------------------------------
 -- AG part
 ------------------------------------------------------------
-
-INCLUDE "Lam_A_ruler.ag"
 
 WRAPPER Root
 
@@ -358,3 +431,5 @@ SEM Exp
   | App				lhs	.	pp		=	@f.pp >#< ppParens @a.pp >|< ppErr @errUnify
   | Lam				lhs	.	pp		=	"\\" >|< @n >|< "." >|< @exp.pp
   | Let				lhs	.	pp		=	"let" >#< @n >#< (":" >#< pp @pty_ >-< "=" >#< @exp.pp) >#< "in" >-< @body.pp
+
+%%]

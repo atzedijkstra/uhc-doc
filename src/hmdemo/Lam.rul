@@ -56,6 +56,10 @@ rulesgroup exp.onslide scheme exp "Basic Exp type rules" =
   rule exp.core abs
   rule exp.core app
 
+rulesgroup exp.onslide.sd scheme exp "Basic Exp type rules" =
+  rule exp.core var
+  rule exp.core let
+
 ruleset exp.core scheme exp "Rules for Ty of Exp" =
   rule int "Int" =
     view D =

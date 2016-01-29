@@ -452,9 +452,10 @@ text-variant-flops2016-explimpl:
 	  TEXT_SHUFFLE_VARIANT=72 \
 	  text-variant-dflt-bib
 
-text-variant-slides-flops2016-keynote: $(HMDEMO_A_MAIN_BLD_EXEC)
+text-variant-slides-flops2016-keynote: $(HMDEMO_A_AG_MAIN_BLD_EXEC) $(HMDEMO_A_HS_MAIN_BLD_EXEC)
 	$(MAKE) \
 	  TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX=yes \
+	  TEXT_RULER_MARK_CHANGES_CFG="--markchanges='*'" \
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--set=yesBeamer --set=flops2016 --set=storyKeynoteUHC --unset=asArticle --set=asSlides --unset=useHyperref --unset=refToPDF" \
 	  TEXT_SHUFFLE_VARIANT=73 \
 	  text-variant-latexmk
