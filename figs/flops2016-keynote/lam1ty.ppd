@@ -1,0 +1,34 @@
+prod Exp : App
+attrs
+  syn ty : Ty
+  syn subst : Subst
+
+children
+  nonterm f : Exp
+    attrs
+	  syn ty : Ty
+  nonterm a : Exp
+    attrs
+	  syn ty : Ty
+	  syn subst : Subst
+
+locals
+  loc v
+  loc unif
+  loc su
+  loc s4
+
+flows
+  a.out.subst -> loc.s4
+  loc.s4 -> lhs.out.subst
+
+  loc.v -> loc.unif downwards
+  a.out.subst -> loc.unif
+  f.out.ty -> loc.unif
+  a.out.ty -> loc.unif
+  loc.unif -> loc.su
+  loc.su -> loc.s4 downwards
+
+  loc.v -> lhs.out.ty
+  loc.s4 -> lhs.out.ty
+

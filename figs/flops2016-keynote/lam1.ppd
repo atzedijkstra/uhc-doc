@@ -1,0 +1,66 @@
+prod Exp : App
+attrs
+  inh env : Env
+  inh subst : Subst
+  inh uniq : Int
+  syn subst : Subst
+  syn uniq : Int
+  syn err : Err
+  syn ty : Ty
+
+children
+  nonterm f : Exp
+    attrs
+      inh env : Env
+      inh subst : Subst
+      inh uniq : Int
+      syn subst : Subst
+      syn uniq : Int
+      syn err : Err
+      syn ty : Ty
+  nonterm a : Exp
+    attrs
+      inh env : Env
+      inh subst : Subst
+      inh uniq : Int
+      syn subst : Subst
+      syn uniq : Int
+      syn err : Err
+      syn ty : Ty
+
+locals
+  loc eu
+  loc su
+  loc v
+  loc s4
+
+flows
+  lhs.in.env -> f.in.env
+  lhs.in.env -> a.in.env
+  
+  lhs.in.uniq -> f.in.uniq
+  lhs.in.uniq -> loc.v
+  f.out.uniq -> a.in.uniq upwards
+  a.out.uniq -> lhs.out.uniq
+
+  loc.v -> loc.eu
+  loc.v -> loc.su
+  f.out.ty -> loc.su
+  a.out.ty -> loc.su
+  f.out.ty -> loc.eu
+  a.out.ty -> loc.eu
+  loc.su -> loc.s4
+  a.out.subst -> loc.s4
+
+  lhs.in.subst -> f.in.subst
+  f.out.subst -> a.in.subst upwards
+  a.out.subst -> lhs.out.subst
+  loc.s4 -> lhs.out.subst
+  
+  f.out.err -> lhs.out.err
+  a.out.err -> lhs.out.err
+  loc.eu -> lhs.out.err
+  
+  loc.v -> lhs.out.ty
+  loc.s4 -> lhs.out.ty
+

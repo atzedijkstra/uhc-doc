@@ -38,9 +38,10 @@ include $(UHC_SRC_PREFIX)ehc/variant.mk
 include $(UHC_SRC_PREFIX)ehc/files1.mk
 
 include text/files1.mk
+include figs/files.mk
+
 include $(UHCDOC_SRC_PREFIX)hmdemo/files.mk
 
-include figs/files.mk
 include text/files-variants.mk
 include $(wildcard text/files1-*.mk)
 include text/files2.mk

@@ -1,0 +1,23 @@
+prod Exp : App
+attrs
+  inh uniq : Int
+  syn uniq : Int
+
+children
+  nonterm f : Exp
+    attrs
+      inh uniq : Int
+      syn uniq : Int
+  nonterm a : Exp
+    attrs
+      inh uniq : Int
+      syn uniq : Int
+
+locals
+  loc v
+
+flows
+  lhs.in.uniq -> f.in.uniq
+  lhs.in.uniq -> loc.v
+  f.out.uniq -> a.in.uniq upwards
+  a.out.uniq -> lhs.out.uniq

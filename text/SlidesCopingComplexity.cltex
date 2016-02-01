@@ -1,6 +1,14 @@
 %%[preamble
-\newcommand{\Red}[1]{{\color{uured}#1}}
+%\barhs
+%\setlength{\coderulewidth}{1.5pt}
+
+\newcommand{\CITE}[1]{\footnote{\citetitle{#1}, \citeyear{#1}}}
+
+\newcommand{\Red}[1]{{\color{red}#1}}
 \newcommand{\Itl}[1]{\textit{#1}}
+\newcommand{\Emph}[1]{\Red{\Itl{#1}}}
+
+%format (RED(x))	= "\Red{" x "}"
 
 %format tvara	= "\alpha"
 %format tvarb	= "\beta"
@@ -17,22 +25,25 @@
 %format subst	= "\theta"
 %format Subst	= subst
 
+%format oplus	= "\oplus"
+%format otimes	= "\otimes"
+
 %format TyInt	= "Int"
 %%]
 
 %%[intro
 \begin{frame}
-  \frametitle{\Itl{UHC}: Coping with Compiler \Itl{Complexity}}
+  \frametitle{\Emph{UHC}: Coping with Compiler \Emph{Complexity}}
   
   \begin{itemize}
-    \item \Itl{UHC}: Utrecht Haskell Compiler
+    \item \Emph{UHC}: Utrecht Haskell Compiler
     \begin{itemize}
       \item Haskell2010 implementation
       \item Primarily intended for play \& experimentation: higher ranked types, partial type signatures, generic deriving, local instances, java(script) backend, ...
       \item Inspiration for tooling
     \end{itemize}
     
-    \item \Itl{Complexity}: Dimensions of complexity
+    \item \Emph{Complexity}: Dimensions of complexity
     \begin{itemize}
       \item From specification to implementation
       \item From few to many (combined) language features
@@ -356,7 +367,18 @@ algoW env st (Exp_App f a) =
     (su,  eu)       = unify  (s3 $-> tf)                ^^ -- apply subst, unify
                              (TyArr ta v)
     s4              = su $-> s3
+%%]]
+}
 
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation, purely functional}
+
+Utility types (for reference)
+{\small
+%%[[wrap=safecode
 data TyVar  = TV Int ...
 data Ty     = TyInt | TyVar TyVar | TyArr Ty Ty | ...
 data Exp    = Exp_App  Exp Exp | ...
@@ -375,14 +397,15 @@ class Substitutable x where {($->) :: Subst -> x -> x}
   What have we done so far?
 
   \begin{itemize}
-    \item Functional implementation
+    \item Started with concise declarative specification, which
     \begin{itemize}
-      \item Directly related to declarative semantics via algorithmic version
+      \item Via algorithmic version
+      \item Led to functional implementation
     \end{itemize}
     \item But...
     \begin{itemize}
-      \item Many details left out...
-      \item Actual implementation must do more: parser, scanner, ...
+      \item Many low level details crept in while still many details are left out
+      \item An actual implementation must do more than just specify semantics: parser, scanner, ...
       \item Approx 300 LOC (without comment)
     \end{itemize}
     
@@ -393,6 +416,91 @@ class Substitutable x where {($->) :: Subst -> x -> x}
       % \item Error gathering
     \end{itemize}
   \end{itemize}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+
+  Can we \Emph{scale up}?
+  
+  \begin{itemize}
+    \item The things/aspects we want to specify/compute per language construct?
+    \item The number of language constructs?
+  \end{itemize}
+  
+  \pause
+  The \Emph{ideal} would be to be able to specify independently
+
+  \begin{itemize}
+    \item Aspects |a1| and |a2| and then combine them with some operator |oplus| into |a1 oplus a2|
+    \item Language features |f1| and |f2| and then combine them with some operator |otimes| into |f1 otimes f2|
+  \end{itemize}
+  
+  The \Emph{reality} is that aspects, features, and their combination usually must be 'aware' of each other to some degree.
+  
+  \pause
+  \begin{itemize}
+    \item Why?
+    \item How is this mitigated in UHC?
+  \end{itemize}
+  
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation, pretty printing}
+  
+  The ideal would be to define pretty printing independently of algoW:
+
+%%[[wrap=safecode
+pp :: Exp -> Doc
+pp (Exp_App f a    )  =  pp f >|< pp a
+pp (Exp_Let n e b  )  =  "let"  >|< pp n >|< "=" >|< pp e >|<
+                         "in"   >|< pp b
+
+data Doc = ...                      ^^ -- pretty print document
+(>|<) :: Doc -> Doc -> Doc          ^^ -- concatenate horizontally
+%%]]
+
+  This works well if |pp| does not use info encapsulated in |algoW|
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation, pretty printing}
+  
+  Leads to nanopasses\CITE{Keep:2013:NFC:2520988}\CITE{laemmel03boilerplate}
+  in compiler: small, maintainable, isolates solution for single (independent) problem
+  
+  \begin{itemize}
+  \item Used in UHC for (e.g.) transformations of intermediate representations
+  \item Can be inefficient, boilerplate overhead
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation, pretty printing}
+  
+  The reality here is that |pp| and |algoW| are dependent:
+  pretty printing uses the inferred type (|te|) and error messages (|eu|) of |algoW|
+
+%%[[wrap=safecode
+pp :: Exp -> Doc
+pp (Exp_App f a    )  =  pp f >|< pp a (RED( >|< pp eu))
+pp (Exp_Let n e b  )  =  "let"  >|< pp n  (RED( >|< ":" >|< pp te >|<))
+                                          >|< "=" >|< pp  e >|<
+                         "in"   >|< pp b
+%%]]
+
+  Aspects type and pretty printing are not independent!
+
+  In general, more complex analyses are dependent.
 
 \end{frame}
 
@@ -400,20 +508,200 @@ class Substitutable x where {($->) :: Subst -> x -> x}
 \begin{frame}
   \frametitle{Implementation}
 
-Get rid of some functional plumbing by using monads
+  Solution 1: add |pp| to |algoW|:
+
+{\small
+%%[[wrap=safecode
+algoW :: Env -> (Subst, Int) -> Exp -> (Ty, (Subst, Int), Err(RED(, Doc)))
+algoW env st (Exp_App f a) =
+    (s4 $-> v, (s4, uniq st3), ef ++ ea ++ eu(RED(, pf >|< pa >|< pp eu)))
+  where 
+    (tf,  st1, ef(RED(, pf)))  = algoW env st   f    
+    (ta,  st2, ea(RED(, pa)))  = algoW env st1  a    
+    (su,  eu)                  = unify  (s3 $-> tf) (TyArr ta v)
+    ...
+%%]]
+}
+
+  Refactorization in the 'wrong' direction
+
+  \begin{itemize}
+  \item Adding an aspect means a manual overhaul of boilerplate code
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation}
+
+  Solution 2: plumbing via underlying implementation language
 
 \begin{itemize}
-\item Monadic interface of Algorithm W
+\item A monadic interface for Algorithm W
 %%[[wrap=safecode
 algoW
       ::  (  MonadReader Env m                  ^^ -- scoped name mapping
           ,  MonadState (Subst, Int) m          ^^ -- global state
-          ,  MonadError Err m                   ^^ -- error handling
+          ,  MonadError Err m                   ^^ -- error/exception
+          (RED(, MonadWriter Doc m))            ^^ -- \Red{pretty printing}
           ) => Exp -> m Ty
 %%]]
+\item Boilerplate partially done by monad transformer lifting
+\item Allows monadic ordering: state left-to-right, by default no mutual recursion, ...
+\item Possibly constrained by underlying type system%, may require a monad per aspect
 \end{itemize}
 
-(Alternatively we might use |MonadWriter| for gathering errors instead of stopping at first error occurrence)
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Solution 3 (taken by UHC): DSL for computations over ASTs
+
+  \begin{itemize}
+  \item Each individual computation expressed as attribute
+  \item Specification for each attribute can be separately described, to be combined elsewhere
+  \item A compiler (UUAGC) glues separate specifications, generating functional program, including boilerplate
+  \end{itemize}
+
+  Data flow over tree fragments, thinking in terms of attributes associated with parent and children in AST
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Way of thinking and programming now can be different
+   
+  \begin{itemize}
+  \item All computation is defined in terms of attributes associated with parent and children
+  \item Attributes are defined in terms of other attributes, thus specifying small dataflow fragments for parent and children
+  \end{itemize}
+  
+  \begin{center}
+  \agpictureAtY{4}{2}{flops2016-keynote/lam1env}
+  \end{center}
+
+  \begin{itemize}
+  \item Inherited attributes 'travel' downwards (from root to leaves), synthesized upwards
+  \end{itemize}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Environment
+  
+  \begin{center}
+  \agpictureScaled{0.5}{flops2016-keynote/lam1env}
+  \end{center}
+
+%%[[wrap=safecode
+DATA Exp                                    ^^ -- AST
+  | App     f     : Exp
+            a     : Exp
+
+ATTR Exp [ env: Env | | ]                   ^^ -- inherited, from root to leaves
+
+SEM Exp
+  | App     f   .   env     =   @lhs.env    ^^ -- copied downwards
+            a   .   env     =   @lhs.env
+%%]]
+
+Boilerplate copying (for |env|) can be omitted and generated automatically
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Unique number generation
+  
+  \begin{center}
+  \agpictureAtY{8}{4}{flops2016-keynote/lam1uniq}
+  \end{center}
+
+%%[[wrap=safecode
+ATTR Exp [ | uniq: Int | ]                   ^^ -- synthesized + inherited = state
+
+SEM Exp
+  | App     loc     .   v       =   mkTyVar @lhs.uniq
+            f       .   uniq    =   @lhs.uniq + 1
+%%]]
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Substitution
+  
+  \begin{center}
+  \agpictureAtY{10}{5}{flops2016-keynote/lam1subst}
+  \end{center}
+
+%%[[wrap=safecode
+ATTR Exp [ | subst: Subst | ]
+%%]]
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Substitution, type, unification
+  
+  \begin{center}
+  \agpictureAtY{11}{6}{flops2016-keynote/lam1ty}
+  \end{center}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  \begin{center}
+  \agpictureScaledAtY{11}{6}{0.5}{flops2016-keynote/lam1ty}
+  \end{center}
+
+%%[[wrap=safecode
+ATTR Exp [ | | ty: Ty ]     ^^ -- synthesized
+
+SEM Exp
+  | App  (loc.su,loc.eu)   =  unify  (@a.subst $-> @f.ty)
+                                     (TyArr @a.ty @v)
+         loc  .  s4        =  @su $-> @a.subst
+         lhs  .  ty        =  @s4 $-> @v
+              .  subst     =  @s4
+%%]]
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Attribute grammars}
+  
+  Error collecting
+  
+  \begin{center}
+  \agpictureAtY{8}{4}{flops2016-keynote/lam1err}
+  \end{center}
+
+%%[[wrap=safecode
+ATTR Exp [ | | err : Err ]
+
+SEM Exp
+  | App				lhs	.	err		=	@eu ++ @f.err ++ @a.err
+%%]]
 
 \end{frame}
 
@@ -440,6 +728,11 @@ algoW (Exp_App f a) = do
 %}
 
 
+%%]
+
+%%[bibPreamble
+\usepackage{biblatex}
+\addbibresource{flops2016-keynote.bib}
 %%]
 
 %%[XX

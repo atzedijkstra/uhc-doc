@@ -1,0 +1,23 @@
+prod Exp : App
+attrs
+  syn err : Err
+
+children
+  nonterm f : Exp
+    attrs
+      syn err : Err
+  nonterm a : Exp
+    attrs
+      syn err : Err
+
+locals
+  loc unif
+  loc eu
+
+flows
+  f.out.err -> lhs.out.err
+  a.out.err -> lhs.out.err
+  loc.eu -> lhs.out.err
+
+  loc.unif -> loc.eu downwards
+

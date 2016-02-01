@@ -1,0 +1,25 @@
+prod Exp : App
+attrs
+  inh subst : Subst
+  syn subst : Subst
+
+children
+  nonterm f : Exp
+    attrs
+	  inh subst : Subst
+	  syn subst : Subst
+  nonterm a : Exp
+    attrs
+	  inh subst : Subst
+	  syn subst : Subst
+
+locals
+  loc s4
+
+flows
+  a.out.subst -> loc.s4
+
+  lhs.in.subst -> f.in.subst
+  f.out.subst -> a.in.subst upwards
+  loc.s4 -> lhs.out.subst
+

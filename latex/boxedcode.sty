@@ -21,10 +21,10 @@
 \newenvironment{clrbox}[2]%
   {{\parskip=0pt\parindent=0pt\par\vskip\abovedisplayskip\noindent}%
    \arrayrulecolor{#2}%
-   \setlength{\arrayrulewidth}{1.4\arrayrulewidth}%
+   \setlength{\arrayrulewidth}{2\arrayrulewidth}%
    \defaultcolumn{l}
    \tabular{%
-     @{}|>{\columncolor{#1!20}\(}p{.80\columnwidth}<{\)}|@{}}%
+     @{}|>{\columncolor{#1!10}\(}p{.90\columnwidth}<{\)}|@{}}%
    \hline%
    \let\\=\@normalcr}%
   {\tabularnewline\hline%
@@ -44,6 +44,6 @@
 %% ----------------------------------------------------------------------------
 
 \newenvironment{hsbox}%
-  {\clrbox{hsbg}{hsborder}\hscodestyle\pboxed}%
+  {\clrbox{lightgray}{lightgray}\hscodestyle\pboxed}%
   {\endpboxed\endclrbox}
 \sethscode{hsbox}

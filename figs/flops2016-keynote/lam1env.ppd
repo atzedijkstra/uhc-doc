@@ -1,0 +1,16 @@
+prod Exp : App
+attrs
+  inh env : Env
+
+children
+  nonterm f : Exp
+    attrs
+      inh env : Env
+  nonterm a : Exp
+    attrs
+      inh env : Env
+
+flows
+  lhs.in.env -> f.in.env
+  lhs.in.env -> a.in.env
+
