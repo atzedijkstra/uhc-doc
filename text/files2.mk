@@ -185,7 +185,7 @@ TEXT_ALL_TEX_PDFONLY_DPD	:= $(TEXT_MAIN_DRV_TEX) $(TEXT_SUBS_DRV_TEX) $(TEXT_MAI
 								$(TEXT_INCL_LIST_TEX) 
 
 # all deriveds ltex (as counting for make dependencies)
-TEXT_ALL_LTEX_PDFONLY_DPD	:= $(if $(TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX),$(HMDEMO_LAM_RUL_DRV_LTEX)) \
+TEXT_ALL_LTEX_PDFONLY_DPD	:= $(if $(TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX),$(HMDEMO_LAM_RUL_DRV_CHNG_LTEX) $(HMDEMO_LAM_RUL_DRV_NOCHNG_LTEX)) \
 								$(TEXT_INCL_LIST_LTEX)
 
 # all deriveds (as counting for make dependencies)
@@ -205,14 +205,21 @@ TEXT_SUBS_SHUFFLE1			:= $(TEXT_SUBS_SRC_CLTEX) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_RULER_EHC_TEX),$(TEXT_RULES_EXPLAIN_3_DRV_CAG)) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_RULER_INF2PS_TEX),$(TEXT_INF2PS_SRC_CRUL)) \
 								$(if $(TEXT_CFG_TEXT_INCLUDES_RULER_TEX),$(TEXT_RULEX_SRC_CRUL)) \
+								$(if $(TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC_HMDEMO),$(HMDEMO_ALL_DRV_CAG)) \
 								$(TEXT_MAIN_SRC_CLSTY)
-TEXT_SUBS_SHUFFLE_SRCS		:= $(if $(TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC),$(EHC_AG_ALL_MAIN_SRC_CAG) $(EHC_HS_ALL_SRC_CHS)) \
+TEXT_SUBS_SHUFFLE_SRCS_EHC	:= $(if $(TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC),$(EHC_AG_ALL_MAIN_SRC_CAG) $(EHC_HS_ALL_SRC_CHS)) \
 								$(if $(TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC_EXPERIMENTS_SUBST),$(EXPERIMENTS_SUBST_ALL_CHUNK_SRC))
-TEXT_SUBS_SHUFFLE			:= $(TEXT_SUBS_SHUFFLE1) $(TEXT_SUBS_SHUFFLE_SRCS)
+TEXT_SUBS_SHUFFLE_SRCS_HMDEMO \
+							:= $(if $(TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC_HMDEMO),$(HMDEMO_ALL_SRC_CAG))
+TEXT_SUBS_SHUFFLE			:= $(TEXT_SUBS_SHUFFLE1) $(TEXT_SUBS_SHUFFLE_SRCS_EHC) $(TEXT_SUBS_SHUFFLE_SRCS_HMDEMO)
 TEXT_SUBS_SHUFFLE_ALIAS		:= $(TEXT_SUBS_SHUFFLE1) \
 								$(patsubst EHEH%,EH%,\
-									$(join $(patsubst %,EH%=,$(basename $(subst /,$(empty),$(patsubst $(SRC_EHC_PREFIX)%,%,$(TEXT_SUBS_SHUFFLE_SRCS))))), \
-									       $(TEXT_SUBS_SHUFFLE_SRCS) \
+									$(join $(patsubst %,EH%=,$(basename $(subst /,$(empty),$(patsubst $(SRC_EHC_PREFIX)%,%,$(TEXT_SUBS_SHUFFLE_SRCS_EHC))))), \
+									       $(TEXT_SUBS_SHUFFLE_SRCS_EHC) \
+									)) \
+								$(patsubst %,%,\
+									$(join $(patsubst %,HMDemo%=,$(basename $(subst /,$(empty),$(patsubst $(SRC_HMDEMO_PREFIX)%,%,$(TEXT_SUBS_SHUFFLE_SRCS_HMDEMO))))), \
+									       $(TEXT_SUBS_SHUFFLE_SRCS_HMDEMO) \
 									))
 
 # distribution
@@ -446,8 +453,8 @@ $(TEXT_INCL_LIST_TEX): $(TEXT_ALL_MK_FILES)
 	  done \
 	) > $@
 
-$(TEXT_INCL_LIST_LTEX): $(if $(TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX),$(HMDEMO_LAM_RUL_DRV_LTEX))
-	@(for f in $(sort $(notdir $? \
+$(TEXT_INCL_LIST_LTEX): $(if $(TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX),$(HMDEMO_LAM_RUL_DRV_CHNG_LTEX) $(HMDEMO_LAM_RUL_DRV_NOCHNG_LTEX))
+	@(for f in $(sort $(notdir $^ \
 	            )      ) ; \
 	  do \
 	    echo "%include" $$f ; \

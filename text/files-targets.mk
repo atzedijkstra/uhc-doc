@@ -456,6 +456,7 @@ text-variant-slides-flops2016-keynote: $(HMDEMO_A_AG_MAIN_BLD_EXEC) $(HMDEMO_A_H
 	$(MAKE) \
 	  TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX=yes \
 	  TEXT_CFG_FIGS_INCLUDES_PPD_SRC=yes \
+	  TEXT_CFG_SHUFFLE_INCLUDES_CHUNK_SRC_HMDEMO=yes \
 	  TEXT_RULER_MARK_CHANGES_CFG="--markchanges='*'" \
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--set=yesBeamer --set=flops2016 --set=storyKeynoteUHC --unset=asArticle --set=asSlides --unset=useHyperref --unset=refToPDF" \
 	  TEXT_SHUFFLE_VARIANT=73 \

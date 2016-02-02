@@ -1,4 +1,22 @@
+%%[beamerTheme
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Theme used by beamer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\usetheme{Singapore}
+\usetheme[secheader]{Boadilla}
+%\useoutertheme{infolines}
+%%]
+
 %%[preamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Preamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\newcommand{\latex}{\LaTeX\xspace}
+\newcommand{\latex}{LaTeX}
+\newcommand{\lhstex}{Lhs2TeX}
+
 %\barhs
 %\setlength{\coderulewidth}{1.5pt}
 
@@ -9,21 +27,28 @@
 \newcommand{\Emph}[1]{\Red{\Itl{#1}}}
 
 %format (RED(x))	= "\Red{" x "}"
+%format BLGRAY 	= "\color{lightgray}"
+
+%format Ty_		= "\tau"
+%format Env_	= "\Gamma"
+%format Exp_	= "e"
+%format Subst_	= "\theta"
+%format subst_	= Subst_
 
 %format tvara	= "\alpha"
 %format tvarb	= "\beta"
 %format tvar	= tvara
-%format ty		= "\tau"
-%format tya		= ty "_a"
-%format Ty		= ty
+%format ty		= Ty_
+%format tya		= Ty_ "_a"
+%format Ty		= Ty_
 %format pty		= "\sigma"
 %format PTy		= pty
-%format env		= "\Gamma"
-%format Env		= env
+%format env		= Env_
+%format Env		= Env_
 %format exp		= "e"
-%format Exp		= exp
-%format subst	= "\theta"
-%format Subst	= subst
+%format Exp		= Exp_
+%format subst	= Subst_
+%format Subst	= Subst_
 
 %format oplus	= "\oplus"
 %format otimes	= "\otimes"
@@ -32,6 +57,10 @@
 %%]
 
 %%[intro
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Intro
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}
   \frametitle{\Emph{UHC}: Coping with Compiler \Emph{Complexity}}
   
@@ -47,6 +76,13 @@
     \begin{itemize}
       \item From specification to implementation
       \item From few to many (combined) language features
+    \end{itemize}
+    
+    \item \Emph{Objective}: keep specification as simple as possible
+    \begin{itemize}
+      \item DSL (Domain Specific Language) for recurring problems
+      \item Generate boilerplate code
+      \item Consistency between specifications
     \end{itemize}
     
   \end{itemize}
@@ -96,7 +132,6 @@
 
 \end{frame}
 
-
 \begin{frame}
   \frametitle{Today's plan}
   
@@ -108,6 +143,20 @@
 
 \end{frame}
 
+
+\section*{Contents}
+
+\begin{frame}
+  \tableofcontents
+  
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Example
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Running example}
 
 \begin{frame}
   \frametitle{Demo language}
@@ -232,6 +281,12 @@ Occurs: v8
 \end{frame}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Type system
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Type system specification}
+
 \begin{frame}
   \frametitle{Writing a compiler for the demo language}
   
@@ -311,15 +366,16 @@ Occurs: v8
   
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Implementation: Haskell
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Implementation: Haskell}
+
 %{
 
-%format Ty_		= ty
-%format Env_	= env
-%format Exp_	= exp
-%format Subst_	= subst
-%format subst_	= subst
-
 %format Ty		= "Ty"
+%format ty		= "ty"
 %format Env		= "Env"
 %format env		= "env"
 %format Exp		= "Exp"
@@ -328,7 +384,7 @@ Occurs: v8
 
 %format TyInt	= "TyInt"
 
-%format $->		= $ "_{\theta}"
+%format $->		= $ "_{" Subst_ "}"
 
 \begin{frame}
   \frametitle{Implementation}
@@ -336,17 +392,23 @@ Occurs: v8
 Haskell implementation of Algorithm W
 
 %%[[wrap=safecode
-algoW :: Env -> (Subst, Int) -> Exp -> (Ty, (Subst, Int), Err)
+algoW ::  Env   -> (  Subst, Int)  ->  Exp   -> (  Ty, (   Subst, Int), Err)
+          Env_  ;     Subst_       :-  exp   :     Ty_ ~>  Subst_
 %%]]
 
-\begin{itemize}
-\item |Env, Env_|: scoped environment, mapping from identifiers to types
-\item |Exp, Exp_|: term AST
-\item |Ty, Ty_|: types
-\item |Int|: unique number generation, for fresh type variables
-\item |Subst, Subst_|: substitution, mapping from type variables to types
-\item |Err|: errors
-\end{itemize}
+\begin{center}
+\begin{tabular}{lll}
+\textbf{Type} &  &  \\ \hline
+|Env| & |Env_| & scoped environment, mapping from identifiers to types \\
+|Exp| & | Exp_| & term AST \\
+|Ty| & | Ty_| & types \\
+|Int| & & unique number generation, for fresh type variables \\
+|Subst| & | Subst_| & substitution, mapping from type variables to types \\
+|Err| & & errors \\
+\end{tabular}
+\end{center}
+
+Syntax directed rules now allow pattern match on |Exp|
 
 \end{frame}
 
@@ -367,6 +429,11 @@ algoW env st (Exp_App f a) =
     (su,  eu)       = unify  (s3 $-> tf)                ^^ -- apply subst, unify
                              (TyArr ta v)
     s4              = su $-> s3
+    
+    BLGRAY -- helper functions
+    BLGRAY fresh (s,u) = (mkTyVar u, (s,u+1))
+    BLGRAY subst = fst
+    BLGRAY uniq = snd
 %%]]
 }
 
@@ -401,12 +468,13 @@ class Substitutable x where {($->) :: Subst -> x -> x}
     \begin{itemize}
       \item Via algorithmic version
       \item Led to functional implementation
+      \item For which Haskell itself is already a good match
     \end{itemize}
     \item But...
     \begin{itemize}
       \item Many low level details crept in while still many details are left out
       \item An actual implementation must do more than just specify semantics: parser, scanner, ...
-      \item Approx 300 LOC (without comment)
+      \item Implementation for our example: approx 300 LOC (without comment)
     \end{itemize}
     
     \item And...
@@ -442,8 +510,8 @@ class Substitutable x where {($->) :: Subst -> x -> x}
   
   \pause
   \begin{itemize}
-    \item Why?
-    \item How is this mitigated in UHC?
+    \item Why? How is this mitigated in UHC?
+    \item First, we look at combining aspects
   \end{itemize}
   
 
@@ -571,6 +639,13 @@ algoW
 \end{frame}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Implementation: AG
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Implementation: Attribute Grammar}
+
+
 \begin{frame}
   \frametitle{Attribute grammars}
   
@@ -613,7 +688,7 @@ SEM Exp
             a   .   env     =   @lhs.env
 %%]]
 
-Boilerplate copying (for |env|) can be omitted and generated automatically
+Boilerplate copying (for |env|) usually omitted and generated automatically
 
 \end{frame}
 
@@ -660,7 +735,7 @@ ATTR Exp [ | subst: Subst | ]
   Substitution, type, unification
   
   \begin{center}
-  \agpictureAtY{11}{6}{flops2016-keynote/lam1ty}
+  \agpictureAtY{12}{7}{flops2016-keynote/lam1ty}
   \end{center}
 
 \end{frame}
@@ -707,30 +782,307 @@ SEM Exp
 
 
 \begin{frame}
-  \frametitle{Implementation}
-
-And (finally) some implementation code...
+  \frametitle{Attribute grammars}
+  
+  Similarly: pretty printing
+  
+  \begin{center}
+  \agpictureAtY{7}{3}{flops2016-keynote/lam1pp}
+  \end{center}
 
 %%[[wrap=safecode
-algoW (Exp_App f a) = do
-  tf <- algoW f                 ^^ -- recurse for function
-  ta <- algoW a                 ^^ -- recurse for argument
-  s <- subst                    ^^ -- get current subst
-  v <- fresh                    ^^ -- new fresh type var
-  unif (s $-> tf) (TyArr ta v)  ^^ -- apply subst, unify
-  s <- subst
-  return $ s $-> v              ^^ -- apply subst, return
+ATTR Exp [ | | pp : Doc ]
+
+SEM Exp
+  | App				lhs	.	pp		=	@f.pp >|< @a.pp >|< ppErr @eu
 %%]]
 
+(Ignoring layout details)
+
 \end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+  
+  What have we done so far?
+
+  \begin{itemize}
+    \item Started with concise declarative specification, which
+    \begin{itemize}
+      \item Via algorithmic version
+      \item Led to Attribute Grammar implementation
+      \item Where all aspects can be described independently even though there are dependencies
+      \item Generates Haskell using UUAGC (UU AG compiler)
+      \item Combines separate specifications, generates boilerplate code
+    \end{itemize}
+    \item This works very well!
+    \begin{itemize}
+      \item In UHC, almost all functionality involving trees is expressed using AGs
+      \item Integrates with Haskell ecosystem
+    \end{itemize}
+  \end{itemize}
+
+  \pause
+  But...
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+  
+  Drawbacks
+
+  \begin{itemize}
+    \item We still have to know about dependencies
+    \begin{itemize}
+      \item Luckily, UUAGC gives feedback about dependency related errors
+    \end{itemize}
+    \item UUAGC is a preprocessor: checks for AG specifics, but not Haskell specifics of embedded Haskell code
+    \begin{itemize}
+      \item We get Haskell errors too late, only when generated code is compiled
+    \end{itemize}
+    \item One has to learn a separate language
+    \begin{itemize}
+      \item And the additional tooling etc.
+    \end{itemize}
+    \item Implementation done manually, what guarantees do we have about consistency with type rules?
+    \begin{itemize}
+      \item Maintaining two copies of the same is a nightmare
+    \end{itemize}    
+  \end{itemize}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+
+  What can we \Emph{guarantee} in order to allow for easier change?
+  
+  \begin{itemize}
+    \item Embed DSLs, allowing better error reporting
+    \item One DSL for both type rules and implementation of them
+  \end{itemize}
+  
+  \pause
+  The \Emph{ideal} would be to be able to specify declaratively
+
+  \begin{itemize}
+    \item The type system, with 'magic' figuring out a corresponding implementation
+    \item An implementation using various DSLs inside one host language
+  \end{itemize}
+  
+  The \Emph{reality} is that type systems soon are too complex,
+  'magic' does not exist, embedding DSLs is still ongoing research,
+  and an implementation involves usually |>1| host languages
+  
+  \pause
+  \begin{itemize}
+    \item Why? How is this mitigated in UHC?
+    \item First, we look at consistency between type rules and implementation
+  \end{itemize}
+  
+
+\end{frame}
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Implementation: Ruler
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Implementation: Ruler}
+
+
+\begin{frame}
+  \frametitle{Implementation: Ruler}
+  
+  Specification of
+  
+  \[
+  \rulerCmdUse{Lamnochng.A.exp.core.app}
+  \]
+
+  Is \latex\ + \lhstex\ a good specification language for type rules?
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: Ruler}
+  
+  \latex\ + \lhstex:
+
+{\tiny
+%%[[wrap=verbatim
+\rulerRule{app}{A}
+{ | tvar | \;\mbox{fresh} | |
+\\| subst ; env :- f : ty | _{ | f |} | ~> subst | _{ | f |} | |
+\\| subst | _{ | a |} | ty | _{ | f |} | === ty | _{ | a |} | -> tvar ~> subst | _{ | u |} | |
+\\| subst | _{ | f |} | ; env :- a : ty | _{ | a |} | ~> subst | _{ | a |} | |
+ }
+{ | subst ; env :- f ^^ a : subst | _{ | u |} | tvar ~> subst | _{ | u |} | subst | _{ | a |} | | }
+%%]]
+}
+
+Gives us pretty rendering in papers and (these) slides...
+
+But...
+
+  \begin{itemize}
+    \item Check for identifier introduction?
+    \item Judgement conforms to its required structure?
+    \item Typing of type rules?
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: Ruler}
+  
+  How can we keep type rules and their implementation consistent?
+  
+  \[
+  \rulerCmdUse{Lamnochng.A.exp.core.app}
+  \]
+
+{\small
+%%@Lam_A_ruler.2.exp.app wrap=safecode
+}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: Ruler}
+  
+  In general, given a specification for some semantics, we (want to)
+  
+  \begin{enumerate}
+    \item \label{semgenrender} Render it for \Emph{human reading} \& reasoning,
+    \item \label{semgenreason} Feed it into \Emph{theorem proving} machinery for (automated/mechanized) reasoning,
+    \item \label{semgenexec} Generate code for \Emph{actual execution}
+  \end{enumerate}
+  
+  The \Emph{ideal} would be to obtain all 3 from a single description.
+  
+  The \Emph{reality} is that for a given tool we get (approx) 2 out of 3...
+  
+  \vspace{2ex} \pause
+  For UHC, |Ruler| gives us \ref{semgenrender} \& \ref{semgenexec}:
+  previous slide contains generated rendering and AG code
+
+\end{frame}
+
+
 
 
 %}
 
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Type system: non syntax driven complexity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Type system: non syntax driven complexity}
+
+
+\begin{frame}
+  \frametitle{Type system: non syntax driven complexity}
+
+  \begin{itemize}
+    \item XX
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item XX
+  \end{itemize}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Language variants: Shuffle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Language variants: Shuffle}
+
+
+\begin{frame}
+  \frametitle{Language variants: Shuffle}
+
+  \begin{itemize}
+    \item XX
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item XX
+  \end{itemize}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Attribute Grammar: as EDSL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Attribute Grammar: as EDSL}
+
+
+\begin{frame}
+  \frametitle{Attribute Grammar: as EDSL}
+
+  \begin{itemize}
+    \item XX
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item XX
+  \end{itemize}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Attribute Grammar: incrementality
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Attribute Grammar: incrementality}
+
+
+\begin{frame}
+  \frametitle{Attribute Grammar: incrementality}
+
+  \begin{itemize}
+    \item XX
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item XX
+  \end{itemize}
+
+\end{frame}
+
+
 %%]
 
 %%[bibPreamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Preamble for bib refs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \usepackage{biblatex}
 \addbibresource{flops2016-keynote.bib}
 %%]

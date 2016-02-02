@@ -28,6 +28,9 @@ HMDEMO_VARIANT_A_AG_SUFF					:= $(HMDEMO_VARIANT_A_SUFF)_$(HMDEMO_LAM_VARIANT_A_
 HMDEMO_VARIANT_A_HS_SUFF					:= $(HMDEMO_VARIANT_A_SUFF)_$(HMDEMO_LAM_VARIANT_A_VIA_HS)
 HMDEMO_VARIANT_A_RULERSUFF					:= $(HMDEMO_VARIANT_A_SUFF)_ruler
 
+# without changes marked
+HMDEMO_VARIANT_NOCHNG						:= nochng
+
 # this file + other mk files
 HMDEMO_LAM_MKF								:= $(patsubst %,$(SRC_HMDEMO_PREFIX)%.mk,files)
 
@@ -39,8 +42,9 @@ HMDEMO_LAM_SRC_RUL							:= $(addprefix $(SRC_HMDEMO_PREFIX),$(HMDEMO_LAM_SRC_BA
 HMDEMO_LAM_SRC_CAG_A						:= $(addprefix $(SRC_HMDEMO_PREFIX),$(HMDEMO_LAM_SRC_BASE)$(HMDEMO_VARIANT_A_SUFF).cag)
 
 # derived for tex usage
-HMDEMO_LAM_RUL_DRV_LTEX						:= $(patsubst $(SRC_HMDEMO_PREFIX)%.rul,$(TEXT_TMP_VARIANT_PREFIX)%.ltex,$(HMDEMO_LAM_SRC_RUL))
-HMDEMO_LAM_RUL_DRV_TEX						:= $(HMDEMO_LAM_RUL_DRV_LTEX:.ltex=.tex)
+HMDEMO_LAM_RUL_DRV_CHNG_LTEX				:= $(patsubst $(SRC_HMDEMO_PREFIX)%.rul,$(TEXT_TMP_VARIANT_PREFIX)%.ltex,$(HMDEMO_LAM_SRC_RUL))
+HMDEMO_LAM_RUL_DRV_NOCHNG_LTEX				:= $(patsubst $(SRC_HMDEMO_PREFIX)%.rul,$(TEXT_TMP_VARIANT_PREFIX)%$(HMDEMO_VARIANT_NOCHNG).ltex,$(HMDEMO_LAM_SRC_RUL))
+#HMDEMO_LAM_RUL_DRV_TEX						:= $(HMDEMO_LAM_RUL_DRV_NOCHNG_LTEX:.ltex=.tex)
 
 # derived for executable, variant A, ruler part
 HMDEMO_LAM_RUL_DRV_A_CAGR					:= $(patsubst $(SRC_HMDEMO_PREFIX)%.rul,$(TEXT_TMP_VARIANT_PREFIX)%$(HMDEMO_VARIANT_A_RULERSUFF).cag,$(HMDEMO_LAM_SRC_RUL))
@@ -54,6 +58,10 @@ HMDEMO_LAM_RUL_DRV_A_HS_HS					:= $(patsubst %.ag,%.hs,$(HMDEMO_LAM_RUL_DRV_A_HS
 
 # all src
 HMDEMO_LAM_ALL_SRC							:= $(HMDEMO_LAM_SRC_RUL) $(HMDEMO_LAM_SRC_CAG_A) $(HMDEMO_LAM_MKF)
+HMDEMO_ALL_SRC_CAG							:= $(HMDEMO_LAM_SRC_CAG_A)
+
+# all derived cag
+HMDEMO_ALL_DRV_CAG							:= $(HMDEMO_LAM_RUL_DRV_A_CAGR)
 
 #######################################################################
 ### Files: executables
@@ -70,31 +78,42 @@ HMDEMO_A_HS_MAIN							:= $(HMDEMO_A_HS_MAIN_BLD_EXEC)
 ### Targets for building
 #######################################################################
 
-$(HMDEMO_LAM_RUL_DRV_LTEX) : $(TEXT_TMP_VARIANT_PREFIX)%.ltex : $(SRC_HMDEMO_PREFIX)%.rul $(RULER2)
+$(HMDEMO_LAM_RUL_DRV_CHNG_LTEX) : $(TEXT_TMP_VARIANT_PREFIX)%.ltex : $(SRC_HMDEMO_PREFIX)%.rul $(RULER2)
 	mkdir -p $(@D)
 	$(RULER2) $(RULER2_OPTS) $(TEXT_RULER_DEFS_TEX) --lhs2tex $(TEXT_RULER_MARK_CHANGES_CFG) --base=$(HMDEMO_LAM_SRC_BASE) $< > $@
+
+$(HMDEMO_LAM_RUL_DRV_NOCHNG_LTEX) : $(TEXT_TMP_VARIANT_PREFIX)%$(HMDEMO_VARIANT_NOCHNG).ltex : $(SRC_HMDEMO_PREFIX)%.rul $(RULER2)
+	mkdir -p $(@D)
+	$(RULER2) $(RULER2_OPTS) $(TEXT_RULER_DEFS_TEX) --lhs2tex --base=$(HMDEMO_LAM_SRC_BASE)$(HMDEMO_VARIANT_NOCHNG) $< > $@
 
 $(HMDEMO_LAM_RUL_DRV_A_CAGR) : $(TEXT_TMP_VARIANT_PREFIX)%$(HMDEMO_VARIANT_A_RULERSUFF).cag : $(SRC_HMDEMO_PREFIX)%.rul $(RULER2) $(HMDEMO_LAM_MKF)
 	mkdir -p $(@D)
 	$(RULER2) $(RULER2_OPTS) --ag --wrapshuffle --selrule="(($(HMDEMO_LAM_VARIANT_A_VIA_AG)=A)).(exp.core).(*)" --DATA --ATTR --base=$(HMDEMO_LAM_SRC_BASE) $< > $@
 
 $(HMDEMO_LAM_RUL_DRV_A_AGR) : $(HMDEMO_LAM_RUL_DRV_A_CAGR) $(HMDEMO_LAM_MKF)
+	mkdir -p $(@D)
 	$(SHUFFLE_AG) --variant-order="$(HMDEMO_LAM_VARIANT_ORDER)" --gen-reqm="$(HMDEMO_LAM_VARIANT_A_VIA_AG)" $< > $@
 
 $(HMDEMO_LAM_RUL_DRV_A_AG_AG) : $(HMDEMO_LAM_SRC_CAG_A) $(HMDEMO_LAM_MKF)
+	mkdir -p $(@D)
 	$(SHUFFLE_AG) --variant-order="$(HMDEMO_LAM_VARIANT_ORDER)" --gen-reqm="$(HMDEMO_LAM_VARIANT_A_VIA_AG)" --base=Main $< > $@
 
 $(HMDEMO_LAM_RUL_DRV_A_HS_AG) : $(HMDEMO_LAM_SRC_CAG_A) $(HMDEMO_LAM_MKF)
+	mkdir -p $(@D)
 	$(SHUFFLE_AG) --variant-order="$(HMDEMO_LAM_VARIANT_ORDER)" --gen-reqm="$(HMDEMO_LAM_VARIANT_A_VIA_HS)" --base=Main $< > $@
 
 $(HMDEMO_LAM_RUL_DRV_A_AG_HS) : $(HMDEMO_LAM_RUL_DRV_A_AG_AG) $(HMDEMO_LAM_RUL_DRV_A_AGR) $(HMDEMO_LAM_MKF)
+	mkdir -p $(@D)
 	$(AGC) -P$(TEXT_TMP_VARIANT_PREFIX) -a --aoag -o $@ $<
 
 $(HMDEMO_LAM_RUL_DRV_A_HS_HS) : $(HMDEMO_LAM_RUL_DRV_A_HS_AG) $(HMDEMO_LAM_MKF)
+	mkdir -p $(@D)
 	$(AGC) -P$(TEXT_TMP_VARIANT_PREFIX) -a -o $@ $<
 
 $(HMDEMO_A_HS_MAIN_BLD_EXEC) : $(HMDEMO_LAM_RUL_DRV_A_HS_HS)
+	mkdir -p $(@D)
 	$(GHC) -XTypeSynonymInstances -XFlexibleInstances -XMultiParamTypeClasses -XFlexibleContexts -XScopedTypeVariables --make $< -o $@
 
 $(HMDEMO_A_AG_MAIN_BLD_EXEC) : $(HMDEMO_LAM_RUL_DRV_A_AG_HS)
+	mkdir -p $(@D)
 	$(GHC) -XTypeSynonymInstances -XFlexibleInstances -XMultiParamTypeClasses -XFlexibleContexts --make $< -o $@

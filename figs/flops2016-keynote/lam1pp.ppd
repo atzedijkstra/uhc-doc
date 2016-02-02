@@ -1,0 +1,20 @@
+prod Exp : App
+attrs
+  syn pp : Doc
+
+children
+  nonterm f : Exp
+    attrs
+      syn pp : Doc
+  nonterm a : Exp
+    attrs
+      syn pp : Doc
+
+locals
+  loc eu
+
+flows
+  f.out.pp -> lhs.out.pp
+  a.out.pp -> lhs.out.pp
+  loc.eu -> lhs.out.pp
+
