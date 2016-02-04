@@ -21,6 +21,7 @@
 %\setlength{\coderulewidth}{1.5pt}
 
 \newcommand{\CITE}[1]{\footnote{\citetitle{#1}, \citeyear{#1}}}
+\newcommand{\CITEU}[1]{\footnote{\citeurl{#1}}}
 
 \newcommand{\Red}[1]{{\color{red}#1}}
 \newcommand{\Itl}[1]{\textit{#1}}
@@ -99,7 +100,7 @@
     \item Impl adds computational direction: from rel to fun
     \item Specify as function
     \item Specify as AG
-    \item Specify as Ruler, DSL, as beefed up AG
+    \item Specify as |Ruler|, DSL, as beefed up AG
     \item Embed AG (Viera)
     \item Issue: repr subst
     \item Issue: free vars, leading to
@@ -643,7 +644,7 @@ algoW
 %%% Implementation: AG
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Implementation: Attribute Grammar}
+\section{Implementation: Attribute Grammar (AG)}
 
 
 \begin{frame}
@@ -893,31 +894,33 @@ SEM Exp
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Implementation: Ruler
+%%% Implementation: |Ruler|
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Implementation: Ruler}
+\section{Implementation: |Ruler|}
 
 
 \begin{frame}
-  \frametitle{Implementation: Ruler}
+  \frametitle{Implementation: |Ruler|}
   
-  Specification of
+  Specification of type semantics often done in \latex
   
   \[
   \rulerCmdUse{Lamnochng.A.exp.core.app}
   \]
 
-  Is \latex\ + \lhstex\ a good specification language for type rules?
+  But ...
+  \\ Is \latex\ + \lhstex\ a good specification language for type rules?
 
 \end{frame}
 
 
 \begin{frame}
-  \frametitle{Implementation: Ruler}
+  \frametitle{Implementation: |Ruler|}
   
   \latex\ + \lhstex:
 
+%%[[latexForRulerRuleAppA
 {\tiny
 %%[[wrap=verbatim
 \rulerRule{app}{A}
@@ -929,22 +932,26 @@ SEM Exp
 { | subst ; env :- f ^^ a : subst | _{ | u |} | tvar ~> subst | _{ | u |} | subst | _{ | a |} | | }
 %%]]
 }
+%%]]
 
 Gives us pretty rendering in papers and (these) slides...
 
 But...
 
   \begin{itemize}
+    \item Mixup of specification \& rendering
     \item Check for identifier introduction?
     \item Judgement conforms to its required structure?
     \item Typing of type rules?
   \end{itemize}
 
+And...
+
 \end{frame}
 
 
 \begin{frame}
-  \frametitle{Implementation: Ruler}
+  \frametitle{Implementation: |Ruler|}
   
   How can we keep type rules and their implementation consistent?
   
@@ -960,14 +967,14 @@ But...
 
 
 \begin{frame}
-  \frametitle{Implementation: Ruler}
+  \frametitle{Implementation: |Ruler|}
   
   In general, given a specification for some semantics, we (want to)
   
   \begin{enumerate}
     \item \label{semgenrender} Render it for \Emph{human reading} \& reasoning,
     \item \label{semgenreason} Feed it into \Emph{theorem proving} machinery for (automated/mechanized) reasoning,
-    \item \label{semgenexec} Generate code for \Emph{actual execution}
+    \item \label{semgenexec} Generate code for \Emph{actual execution} (of e.g. a checker)
   \end{enumerate}
   
   The \Emph{ideal} would be to obtain all 3 from a single description.
@@ -977,6 +984,227 @@ But...
   \vspace{2ex} \pause
   For UHC, |Ruler| gives us \ref{semgenrender} \& \ref{semgenexec}:
   previous slide contains generated rendering and AG code
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  One specification from which everything else is generated
+  
+  Not a new idea:
+  
+  \begin{center}
+  \begin{tabular}{l||p{.17\linewidth}p{.17\linewidth}p{.17\linewidth}p{.17\linewidth}}
+                  & \multicolumn{4}{l}{ \textbf{Generates for, or implements}} \\
+  \textbf{System} &  \textbf{\latex} &  \textbf{mechanized reasoning} &  \textbf{verified code} & \textbf{verifying code} \\ \hline
+  Ott\CITE{sewell2010ott-jfp} & \checkmark & \checkmark & & \\
+  Coq\CITEU{Anonymous:J735rZAA} & \checkmark & \checkmark & \checkmark (extraction) & \\
+  |Ruler|\CITE{dijkstra06ruler} & \checkmark & & & \checkmark (AG checker) \\
+  \end{tabular}
+  \end{center}
+  
+  But...
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  Generating a checker for type rules (i.e. code which verifies) is rather difficult
+  
+  \begin{itemize}
+    \item Why? How did we experiment with |Ruler| in UHC? What is |Ruler|?
+    \item First, we look at |Ruler|
+  \end{itemize}
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  |Ruler|
+  
+  \begin{itemize}
+    \item Specify rules
+    \item Generate \latex\ and/or AG code
+  \end{itemize}
+  
+  The \Emph{good news}
+
+  \begin{itemize}
+    \item Example in these slides is generated from a single |Ruler| specification (+ additional helper code)
+  \end{itemize}
+  
+  %For example...
+
+  
+\end{frame}
+
+
+
+%{
+%format exp		= "exp"
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  |Ruler| example
+
+%%@HMDemoLam.schemeExp wrap=safecode
+
+Specifies
+
+  \begin{itemize}
+    \item for the view |D| (declarative)
+    \item the 'type' of judgements for |exp|,
+    \item its parsing, and
+    \item \latex\ rendering
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  |Ruler| example
+
+%%@HMDemoLam.ruleAppViewD wrap=safecode
+
+  Specifies a single rule instance |app| of scheme (type) |exp|
+
+  %Generates...
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  Generates (already seen)
+
+%%@SlidesCopingComplexity.latexForRulerRuleAppA
+
+  which with a little help from \lhstex\ renders as (also already seen)
+
+  {\small
+  \rulerCmdUse{Lam.D.exp.onslideApp}
+  }
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+    
+  The \Emph{bad news}
+
+  \begin{itemize}
+    \item |Ruler| can generate only when rules are algorithmic and syntax driven
+    \item Which the declarative variant of our example is not, so
+    \item We have to add additional info or override existing to arrive at a rule from which we can generate AG
+  \end{itemize}
+
+  |Ruler| provides mechanisms for additional or replacement specification to obtain
+
+  \begin{center}
+  \begin{tabular}{p{.4\linewidth}p{.4\linewidth}}
+  {\small
+  \rulerCmdUse{Lam.D.exp.core.app}
+  }
+  &
+  {\small
+  \rulerCmdUse{Lam.A.exp.core.app}
+  }
+  \\
+  \end{tabular}
+  \end{center}
+  
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+    
+  %The \Emph{worse news}
+  The \Emph{really bad news}
+  \begin{itemize}
+    \item Rules being algorithmic and syntax driven is not enough for many type systems
+    \item For example, Haskell's class predicate system requires non syntax driven constraint solving
+  \end{itemize}
+  
+  \pause
+  Which led to exploring implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
+  onto which a combi of AG and constraint solving solutions could be mapped
+  
+  \begin{itemize}
+    \item 
+      Left unexplored: design of a |Ruler| successor which allows declarative and algorithmic part to be independently specified,
+      thus avoiding 'pollution' of declarative part
+  \end{itemize}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  Why is it that rules being algorithmic and syntax driven is not enough for many type systems?
+  \begin{itemize}
+    \item Deterministic vs. non-deterministic!
+  \end{itemize}
+    
+  When is non-determinism present and/or required?
+  \begin{itemize}
+    \item In Hindley-Milner type system example non-deterministism is present, but not required, because we can transform it to
+    \item Algorithm W: deterministic, because rule choice is syntax driven, algorithmic because relationships have direction (are functions, computable)
+  \end{itemize}
+    
+
+\end{frame}
+
+%}
+
+  
+
+
+\begin{frame}
+
+
+===========================
+
+Here we are
+  
+===========================
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+  
+  Generating a checker for type rules (i.e. code which verifies) is rather difficult
+  Some answers
+  \begin{itemize}
+    \item One could generate a Prolog (or similar logic) program, however
+    \begin{itemize}
+      \item This might involve (too much) backtracking, be too inefficient
+    \end{itemize}
+    \item One could generate a more efficient mix of deterministic (syntax driven) AG like code and nondeterministic Prolog like code, however
+    \begin{itemize}
+      \item Need to find out which part of a set of rules can be done deterministically, which part not
+      \item For example...
+    \end{itemize}
+  \end{itemize}
 
 \end{frame}
 

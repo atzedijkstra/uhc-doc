@@ -1,3 +1,5 @@
+%%[1
+
 -------------------------------------------------------------------------
 -- Views
 -------------------------------------------------------------------------
@@ -42,13 +44,18 @@ data Exp [exp]
     | Gen      [gen]           exp 	:: Exp
     | Inst     [inst]          exp 	:: Exp
 
+%%[[schemeExp
 scheme exp =
   view D =
-    holes [ node Exp: Exp, env: Env, ty: Ty ]
-    judgespec env :- Exp : ty
+    holes [ node exp: Exp, env: Env, ty: Ty ]
+    judgespec env :- exp : ty
+%%]]
   view A =
     holes [ inh env: Env, thread subst: Subst, syn ty: Ty ]
-    judgespec subst.inh ; env :- Exp : ty ~> subst.syn
+    judgespec subst.inh ; env :- exp : ty ~> subst.syn
+
+rulesgroup exp.onslideApp scheme exp "Basic Exp type rules" =
+  rule exp.core app
 
 rulesgroup exp.onslide scheme exp "Basic Exp type rules" =
   rule exp.core var
@@ -134,12 +141,15 @@ ruleset exp.core scheme exp "Rules for Ty of Exp" =
         | subst.syn = subst.e
         | subst.inh = subst
 
+%%[[ruleAppViewD
   rule app "App" =
     view D =
       judge F : exp = env :- f : (ty.a -> ty.r)
       judge A : exp = env :- a : ty.a
-      ---
+      -
       judge R : exp = env :- (f ^^ a) : ty.r
+%%]]
+%%[[ruleAppViewA
     view A =
       judge F : exp
         | ty = ty.f
@@ -151,11 +161,12 @@ ruleset exp.core scheme exp "Rules for Ty of Exp" =
         | subst.syn = subst.a
       judge Fr : tvarvFresh = tvar
       judge U : unify = (subst.a $-> ty.f) === (ty.a -> tvar) ~> subst.u
-      ---
+      -
       judge R : exp
         | ty = subst.u $-> tvar
         | subst.syn = subst.u $-> subst.a
         | subst.inh = subst
+%%]]
 
 
 ruleset exp.gen scheme exp "Gen/Inst rules for Ty of Exp" =
@@ -248,3 +259,5 @@ relation envLookup =
     judgespec env :- nm : ty
     judgeuse tex  nm :-> ty `elem` env
     judgeuse ag  (ty,errLookup) `=` envLookup (nm) (env)
+
+%%]
