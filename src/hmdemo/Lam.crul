@@ -4,7 +4,7 @@
 -- Views
 -------------------------------------------------------------------------
 
-viewhierarchy = D < SD < A
+viewhierarchy = D < SD < A, D < Q
 
 -------------------------------------------------------------------------
 -- Formatting, general
@@ -43,6 +43,9 @@ data Exp [exp]
                                body :: Exp
     | Gen      [gen]           exp 	:: Exp
     | Inst     [inst]          exp 	:: Exp
+  view Q =
+      PIntro   [introp]        exp 	:: Exp
+    | PElim    [elimp]         exp 	:: Exp
 
 %%[[schemeExp
 scheme exp =
@@ -53,6 +56,9 @@ scheme exp =
   view A =
     holes [ inh env: Env, thread subst: Subst, syn ty: Ty ]
     judgespec subst.inh ; env :- exp : ty ~> subst.syn
+  view Q =
+    holes [ penv: PEnv ]
+    judgespec penv :=- env :- exp : ty
 
 rulesgroup exp.onslideApp scheme exp "Basic Exp type rules" =
   rule exp.core app
@@ -172,10 +178,14 @@ ruleset exp.core scheme exp "Rules for Ty of Exp" =
 ruleset exp.gen scheme exp "Gen/Inst rules for Ty of Exp" =
   rule gen "Gen" =
     view D =
-      judge pred = (tvar `notElem` ftv (env))
+      judge Pr: pred = (tvar `notElem` ftv (env))
       judge A : exp = env :- exp : ty
       ---
       judge R : exp = env :- exp : (forall tvar `.` ty)
+    view Q =
+      judge Pr: pred 
+        | pred = tvar `notElem` (ftv (env) `union` ftv (penv))
+      ---
 
   rule inst "Inst" =
     view D =
@@ -183,6 +193,30 @@ ruleset exp.gen scheme exp "Gen/Inst rules for Ty of Exp" =
       judge A : exp = env :- exp : (forall tvarb `.` ty)
       ---
       judge R : exp = env :- exp : (([tvarb :-> tvara]) $-> ty)
+
+
+ruleset exp.pred scheme exp "Elim/Intro predicate rules for Ty of Exp" =
+  rule introp "PIntro" =
+    view Q =
+      judge A : exp = (penv, pred) :=- env :- exp : qty
+      ---
+      judge R : exp = penv :=- env :- exp : (pred => qty)
+
+  rule elimp "PElim" =
+    view Q =
+      judge A : exp = penv :=- env :- exp : (pred => qty)
+      judge E : entails = penv ::- pred
+      ---
+      judge R : exp = penv :=- env :- exp : qty
+
+-------------------------------------------------------------------------
+-- Entailment
+-------------------------------------------------------------------------
+
+relation entails =
+  view Q =
+    holes [ penv: PEnv, pred: Pred | | ]
+    judgespec penv ::- pred
 
 -------------------------------------------------------------------------
 -- Arbitrary pred
@@ -232,6 +266,10 @@ relation gen =
     holes [ env: Env, t: Ty, tgen: Ty ]
     judgespec env :- t : tgen
     judgeuse tex env :-.."gen" t : tgen
+  view Q =
+    holes [ penv: PEnv ]
+    judgespec penv, env :- t : tgen
+    judgeuse tex penv, env :-.."gen" t : tgen
   view A =
     judgeuse ag  (retain tgen) `=` gen (ftv (env)) (t)
 

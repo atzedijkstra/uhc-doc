@@ -1,3 +1,7 @@
+%%[0 hs
+{-# LANGUAGE TypeFamilies #-}
+%%]
+
 %%[1 module Main
 %%]
 
@@ -16,6 +20,9 @@
 %%[1 hs import(Control.Monad.State, Control.Monad.Reader, Control.Monad.Except)
 %%]
 
+%%[3 hs import(Control.Monad.Stepwise.AG)
+%%]
+
 %%[1 hs
 ------------------------------------------------------------
 -- Utils and types for type system
@@ -24,6 +31,14 @@
 unions [] = []
 unions [x] = x
 unions l = foldr1 L.union l
+%%]
+
+%%[3 hs
+------------------------------------------------------------
+-- For stepwise
+------------------------------------------------------------
+
+data EvalInfo a = EvalInfo
 %%]
 
 %%[1 hs

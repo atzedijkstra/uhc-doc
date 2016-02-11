@@ -32,9 +32,12 @@
 
 %format Ty_		= "\tau"
 %format Env_	= "\Gamma"
+%format PEnv_	= "{\cal{P}}"
 %format Exp_	= "e"
 %format Subst_	= "\theta"
 %format subst_	= Subst_
+%format Pred_	= "\pi"
+%format pred_	= Pred_
 
 %format tvara	= "\alpha"
 %format tvarb	= "\beta"
@@ -44,17 +47,26 @@
 %format Ty		= Ty_
 %format pty		= "\sigma"
 %format PTy		= pty
+%format qty		= "\rho"
+%format QTy		= qty
 %format env		= Env_
 %format Env		= Env_
+%format penv	= PEnv_
+%format PEnv	= PEnv_
 %format exp		= "e"
 %format Exp		= Exp_
 %format subst	= Subst_
 %format Subst	= Subst_
+%format pred	= Pred_
+%format Pred	= Pred_
 
 %format oplus	= "\oplus"
 %format otimes	= "\otimes"
 
 %format TyInt	= "Int"
+
+%format :=-		= "\mid"
+%format ::-		= "\vDash"
 %%]
 
 %%[intro
@@ -1138,17 +1150,6 @@ Specifies
   The \Emph{really bad news}
   \begin{itemize}
     \item Rules being algorithmic and syntax driven is not enough for many type systems
-    \item For example, Haskell's class predicate system requires non syntax driven constraint solving
-  \end{itemize}
-  
-  \pause
-  Which led to exploring implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
-  onto which a combi of AG and constraint solving solutions could be mapped
-  
-  \begin{itemize}
-    \item 
-      Left unexplored: design of a |Ruler| successor which allows declarative and algorithmic part to be independently specified,
-      thus avoiding 'pollution' of declarative part
   \end{itemize}
   
 \end{frame}
@@ -1162,16 +1163,193 @@ Specifies
     \item Deterministic vs. non-deterministic!
   \end{itemize}
     
-  When is non-determinism present and/or required?
+  When is non-determinism \Emph{present} and/or \Emph{required}?
   \begin{itemize}
     \item In Hindley-Milner type system example non-deterministism is present, but not required, because we can transform it to
     \item Algorithm W: deterministic, because rule choice is syntax driven, algorithmic because relationships have direction (are functions, computable)
   \end{itemize}
+  
+  \pause
+  But
+  \begin{itemize}
+    \item Haskell type class system cannot be dealt with in a syntax driven way
+  \end{itemize}
+
+  Let's look at its rules and see why...
     
 
 \end{frame}
 
+
 %}
+
+%}
+
+
+
+\begin{frame}
+  \frametitle{Example: Haskell type class system}
+  
+Haskell type class system
+
+\begin{itemize}
+\item Haskell example
+%%[[wrap=safecode
+   class Eq a where
+     (==) :: a -> a -> Bool
+   instance Eq Int where ...
+   instance Eq a => Eq [a] where ...
+   
+   f :: Eq a => a -> a -> Bool          ^^ -- specified or inferred
+   f x y = x == y && x == y             ^^ -- just an example
+%%]]
+
+\item Extension with qualified types
+%%[[wrap=safecode
+   ty      ::=     Int | ty -> ty | tvar        ^^
+   qty     ::=     ty | pred => qty             ^^ -- qualified
+   pred    ::=     Eq ty | ...
+   pty     ::=     qty | forall tvar . pty
+%%]]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Haskell type class system}
+  
+  Extension of Hindley-Milner type system\CITE{jones94phd-qual-types}, declaratively
+  {\small
+  \rulerCmdUse{Lam.Q.exp.onslide}
+  }
+  
+  \begin{itemize}
+    \item |PEnv| : assumed (i.e. given, true, ...) type class predicates
+    \begin{itemize}
+      \item E.g. |Eq Int, Eq a => Eq [a]|
+    \end{itemize}
+    \item Almost independent extension of HM ...
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Haskell type class system}
+  
+  Only need to tweak generalization
+  
+  {\small
+  \rulerCmdUse{Lam.Q.exp.gen}
+  }
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Haskell type class system}
+  
+  Additional rules for predicate introduction and elimination
+  {\small
+  \rulerCmdUse{Lam.Q.exp.pred}
+  }
+  
+  Entailment |penv ::- pred|
+  
+  \pause
+  \begin{itemize}
+    \item Usual rules: transitivity, ...
+    \item Rules derived from class/instance definitions
+    \item Requires a small theorem prover
+    \begin{itemize}
+      \item E.g. to derive |Eq [Int]| from |Eq Int, Eq a => Eq [a]|
+    \end{itemize}
+  \end{itemize}
+
+  \pause
+  So, why is this a problem?
+  
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Haskell type class system}
+  
+  Can we make the rules syntax directed and algorithmic?
+  \begin{itemize}
+    \item To some degree, but...
+    \begin{itemize}
+      \item Direction of |PEnv| is inherited: classes and instances are given
+      \item Direction of |PEnv| is synthesized: during type inference occurrences of identifiers give rise to |pred|s
+      \item Predicates |pred| may involve type variables for which we 'later' find substitutions
+    \end{itemize}
+    \item Theorem proving (context reduction) usually ends up being done in |let| expression, before generalization
+    \begin{itemize}
+      \item Constraint solving: gather constraints syntax directed, prove somewhere else
+      \item Need results still at location where constraint arose
+    \end{itemize}
+  \end{itemize}
+  
+  But ...
+  
+  \pause
+  \begin{itemize}
+    \item The more complex a type system, the more must be done via constraint solving
+  \end{itemize}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+    
+  %The \Emph{worse news}
+  Back to the \Emph{really bad news}
+  \begin{itemize}
+    \item Rules being algorithmic and syntax driven is not enough for many type systems
+  \end{itemize}
+  
+  Solutions:
+  \begin{itemize}
+    \item Its just a Prolog program!
+    \begin{itemize}
+      \item Can we really live with the resulting inefficiencies?
+    \end{itemize}
+    \item Its a paradigms mix: deterministic (syntax directed) AG-like and non-deterministic (logic programming, constraint solving, backtracking) Prolog-like programming
+    \begin{itemize}
+      \item Given a declarative set of (type) rules, can we figure out what can be done using which paradigm?
+    \end{itemize}
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: |Ruler|}
+    
+  Solutions explored in the context of UHC and UUAGC:
+
+  Implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
+  onto which a combi of AG and constraint solving solutions could be mapped
+  \begin{itemize}
+    \item Explicit scheduling for attribute evaluation: visit sequences
+    \item Can be invoked syntax directed
+    \item Can be disconnected from syntax (remote attributes, constraint gathering)
+    \item Can backtrack, partially give results
+  \end{itemize}
+  
+  But...
+  \pause
+  \begin{itemize}
+    \item 
+      Left unexplored: design of a |Ruler| successor which allows declarative and algorithmic part to be independently specified,
+      thus avoiding 'pollution' of declarative part
+  \end{itemize}
+  
+\end{frame}
+
 
   
 
@@ -1211,7 +1389,6 @@ Here we are
 
 
 
-%}
 
 
 

@@ -452,7 +452,7 @@ text-variant-flops2016-explimpl:
 	  TEXT_SHUFFLE_VARIANT=72 \
 	  text-variant-dflt-bib
 
-text-variant-slides-flops2016-keynote: $(HMDEMO_A_AG_MAIN_BLD_EXEC) $(HMDEMO_A_HS_MAIN_BLD_EXEC)
+text-variant-slides-flops2016-keynote: $(HMDEMO_ALL_BLD_EXEC)
 	$(MAKE) \
 	  TEXT_CFG_TEXT_INCLUDES_RULER_HMDEMO_TEX=yes \
 	  TEXT_CFG_FIGS_INCLUDES_PPD_SRC=yes \
