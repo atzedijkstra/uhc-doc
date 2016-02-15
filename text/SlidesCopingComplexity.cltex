@@ -8,6 +8,15 @@
 %\useoutertheme{infolines}
 %%]
 
+%%[config
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Config flags
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%let draft = True
+
+%%]
+
 %%[preamble
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Preamble
@@ -91,10 +100,11 @@
       \item From few to many (combined) language features
     \end{itemize}
     
-    \item \Emph{Objective}: keep specification as simple as possible
+    \item \Emph{Goal}: keep specification as simple as possible
     \begin{itemize}
+      \item Compositionality (divide and conquer)
       \item DSL (Domain Specific Language) for recurring problems
-      \item Generate boilerplate code
+      \item Generate (e.g. boilerplate code)
       \item Consistency between specifications
     \end{itemize}
     
@@ -102,6 +112,8 @@
 
 \end{frame}
 
+
+%if draft
 
 \begin{frame}
   \frametitle{From specification to implementation}
@@ -145,13 +157,16 @@
 
 \end{frame}
 
+%endif
+
+
 \begin{frame}
   \frametitle{Today's plan}
   
   \begin{itemize}
-  \item Write a smallish UHC
+  \item Story thread: write a smallish UHC
   \item Observe what is or will be problematic
-  \item Solutions tried for UHC \& lessons learned
+  \item Solutions tried for UHC, lessons learned, unexplored topics
   \end{itemize}
 
 \end{frame}
@@ -358,7 +373,7 @@ Occurs: v8
   
   But...
   \pause
-  for an implementation more and more design, algorithmic, and engineering decisions have to be made
+  for an implementation design, algorithm, and engineering decisions have to be made
   
   %Observation: 
   
@@ -387,6 +402,7 @@ Occurs: v8
 
 %{
 
+%%[[implPreamble
 %format Ty		= "Ty"
 %format ty		= "ty"
 %format Env		= "Env"
@@ -398,6 +414,7 @@ Occurs: v8
 %format TyInt	= "TyInt"
 
 %format $->		= $ "_{" Subst_ "}"
+%%]]
 
 \begin{frame}
   \frametitle{Implementation}
@@ -416,12 +433,12 @@ algoW ::  Env   -> (  Subst, Int)  ->  Exp   -> (  Ty, (   Subst, Int), Err)
 |Exp| & | Exp_| & term AST \\
 |Ty| & | Ty_| & types \\
 |Int| & & unique number generation, for fresh type variables \\
-|Subst| & | Subst_| & substitution, mapping from type variables to types \\
+|Subst| & | Subst_| & substitution, mapping type variables to types \\
 |Err| & & errors \\
 \end{tabular}
 \end{center}
 
-Syntax directed rules now allow pattern match on |Exp|
+Syntax directed rules now allow pattern match on |Exp| to deterministically choose the right rule
 
 \end{frame}
 
@@ -481,11 +498,11 @@ class Substitutable x where {($->) :: Subst -> x -> x}
     \begin{itemize}
       \item Via algorithmic version
       \item Led to functional implementation
-      \item For which Haskell itself is already a good match
+      \item For which Haskell itself is already a good tool
     \end{itemize}
     \item But...
     \begin{itemize}
-      \item Many low level details crept in while still many details are left out
+      \item Many low level details crept in while still many other details are left out
       \item An actual implementation must do more than just specify semantics: parser, scanner, ...
       \item Implementation for our example: approx 300 LOC (without comment)
     \end{itemize}
@@ -493,7 +510,7 @@ class Substitutable x where {($->) :: Subst -> x -> x}
     \item And...
     \begin{itemize}
       \item We are not done yet...
-      \item Pretty printing
+      \item Pretty printing (as kind of code generation)
       % \item Error gathering
     \end{itemize}
   \end{itemize}
@@ -527,14 +544,16 @@ class Substitutable x where {($->) :: Subst -> x -> x}
     \item First, we look at combining aspects
   \end{itemize}
   
-
 \end{frame}
 
 
 \begin{frame}
   \frametitle{Implementation, pretty printing}
   
-  The ideal would be to define pretty printing independently of algoW:
+  Pretty printing: extra aspect for existing language constructs
+  
+  \begin{itemize}
+    \item The ideal would be to define pretty printing independently of algoW:
 
 %%[[wrap=safecode
 pp :: Exp -> Doc
@@ -546,8 +565,9 @@ data Doc = ...                      ^^ -- pretty print document
 (>|<) :: Doc -> Doc -> Doc          ^^ -- concatenate horizontally
 %%]]
 
-  This works well if |pp| does not use info encapsulated in |algoW|
-  
+  \item This works well if |pp| does not use info encapsulated in |algoW|
+  \end{itemize}
+
 \end{frame}
 
 
@@ -643,11 +663,11 @@ algoW
 
   \begin{itemize}
   \item Each individual computation expressed as attribute
-  \item Specification for each attribute can be separately described, to be combined elsewhere
+  \item Specification for each attribute can be separately described, combined later
   \item A compiler (UUAGC) glues separate specifications, generating functional program, including boilerplate
   \end{itemize}
 
-  Data flow over tree fragments, thinking in terms of attributes associated with parent and children in AST
+  Fragments of data flow over tree, we can think in terms of attributes associated with parent and children in AST
   
 \end{frame}
 
@@ -808,6 +828,7 @@ ATTR Exp [ | | pp : Doc ]
 
 SEM Exp
   | App				lhs	.	pp		=	@f.pp >|< @a.pp >|< ppErr @eu
+  | Lam				lhs	.	pp		=	"\\" >|< @n >|< "." >|< @exp.pp
 %%]]
 
 (Ignoring layout details)
@@ -872,11 +893,11 @@ SEM Exp
 \begin{frame}
   \frametitle{Moments of reflection}
 
-  What can we \Emph{guarantee} in order to allow for easier change?
+  What can we do to \Emph{guarantee} easier change?
   
   \begin{itemize}
-    \item Embed DSLs, allowing better error reporting
     \item One DSL for both type rules and implementation of them
+    \item Embed DSLs, allowing better error reporting
   \end{itemize}
   
   \pause
@@ -922,7 +943,7 @@ SEM Exp
   \]
 
   But ...
-  \\ Is \latex\ + \lhstex\ a good specification language for type rules?
+  \\ Is \latex\ (+ \lhstex) a good specification language for type rules?
 
 \end{frame}
 
@@ -1204,7 +1225,7 @@ Haskell type class system
    f x y = x == y && x == y             ^^ -- just an example
 %%]]
 
-\item Extension with qualified types
+\item Extension of running example with qualified types
 %%[[wrap=safecode
    ty      ::=     Int | ty -> ty | tvar        ^^
    qty     ::=     ty | pred => qty             ^^ -- qualified
@@ -1327,17 +1348,19 @@ Haskell type class system
 
 
 \begin{frame}
-  \frametitle{Implementation: |Ruler|}
+  \frametitle{Implementation: multiple passes}
     
   Solutions explored in the context of UHC and UUAGC:
 
   Implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
-  onto which a combi of AG and constraint solving solutions could be mapped
+  for which a combi of AG and constraint solving solutions can be generated
   \begin{itemize}
     \item Explicit scheduling for attribute evaluation: visit sequences
-    \item Can be invoked syntax directed
-    \item Can be disconnected from syntax (remote attributes, constraint gathering)
-    \item Can backtrack, partially give results
+    \begin{itemize}
+      \item Multipass traversal, each pass a coroutine
+    \end{itemize}
+    \item Can be invoked syntax directed or uncoupled from syntax (as part of constraint solving)
+    \item Can backtrack; can give partial results
   \end{itemize}
   
   But...
@@ -1351,6 +1374,80 @@ Haskell type class system
 \end{frame}
 
 
+%{
+%%@SlidesCopingComplexity.implPreamble
+
+\begin{frame}
+  \frametitle{Implementation: multiple passes}
+  
+  Example: need for multipass support
+  
+  \begin{itemize}
+    \item Small change in running example: pretty print of lambda expression should include inferred type
+    \item Input
+%%[[wrap=safecode
+((\x.x) 5)
+%%]]
+    \item Should pretty print to
+%%[[wrap=verbatim
+(\x:Int.x) (5)
+%%]]
+    \item We know the type: type variable + substitution
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: multiple passes}
+  
+  Substitution only known after type inference of whole program is done: pass it from |Root| downwards as 2nd pass/visit
+%%[[wrap=safecode
+ATTR Exp [ substFin: Subst | | ]
+
+SEM Root
+  | Root            exp .   substFin    =   @exp.subst
+
+SEM Exp
+  | Lam             lhs .   pp          =   "\\"  >|< @n
+                                                  >|< ":" >|< pp (@lhs.substFin $-> @tvar_)
+                                                  >|< "." >|< @exp.pp
+%%]]  
+    
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: multiple passes}
+  
+  UUAGC analyses dependencies to figure out that there are 2 visits
+
+{\tiny
+%%[[wrap=safecode
+type T_Exp = Env -> Subst -> Int -> (Subst,Ty,Int,T_Exp_1)                  			^^ -- 1st visit (type)
+type T_Exp_1 = Subst -> ( Err,PP_Doc)                                       			^^ -- 2nd visit (type)
+sem_Exp_App :: T_Exp -> T_Exp -> T_Exp                                      			^^ -- 1st visit
+sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
+  let  (_fOuniq,_uniq1) = rulerMk1Uniq _lhsIuniq
+       ( _fIsubst,_fIty,_fIuniq,f_1) = f_ _lhsIenv _lhsIsubst _fOuniq
+       _tvar_ = mkTyVar _uniq1
+       ( _aIsubst,_aIty,_aIuniq,a_1) = a_ _lhsIenv _fIsubst _fIuniq
+       (_subst_u_,_errUnify) = unify (_aIsubst $-> _fIty) (TyArr _aIty _tvar_)			^^
+       sem_Exp_1 = \ _lhsIsubstFin ->                                       			^^ -- 2nd visit
+         let  ( _aIerr,_aIpp) = a_1 _lhsIsubstFin
+              ( _fIerr,_fIpp) = f_1 _lhsIsubstFin
+         in   (  _errUnify ++ _fIerr ++ _aIerr
+              ,  _fIpp >#< ppParens _aIpp >|< ppErr _errUnify )
+  in   (  _subst_u_ $-> _aIsubst, _subst_u_ $-> _tvar_
+       ,  _aIuniq, sem_Exp_1 )
+%%]]  
+}
+
+  Personal opinion: happy not to have to write this manually...
+
+\end{frame}
+
+%}
   
 
 

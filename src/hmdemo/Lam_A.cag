@@ -20,7 +20,7 @@
 %%[1 hs import(Control.Monad.State, Control.Monad.Reader, Control.Monad.Except)
 %%]
 
-%%[3 hs import(Control.Monad.Stepwise.AG)
+%%[4 hs import(Control.Monad.Stepwise.AG)
 %%]
 
 %%[1 hs
@@ -33,7 +33,7 @@ unions [x] = x
 unions l = foldr1 L.union l
 %%]
 
-%%[3 hs
+%%[4 hs
 ------------------------------------------------------------
 -- For stepwise
 ------------------------------------------------------------
@@ -491,7 +491,18 @@ SEM Exp
   | Int				lhs	.	pp		= 	pp @i
   | Var				lhs	.	pp		=	pp @n >|< ppErr @errLookup
   | App				lhs	.	pp		=	@f.pp >#< ppParens @a.pp >|< ppErr @errUnify
-  | Lam				lhs	.	pp		=	"\\" >|< @n >|< "." >|< @exp.pp
+  | Lam				lhs	.	pp		=	ppParens $ "\\" >|< @n >|< "." >|< @exp.pp
   | Let				lhs	.	pp		=	"let" >#< @n >#< (":" >#< pp @pty_ >-< "=" >#< @exp.pp) >#< "in" >-< @body.pp
 
+%%]
+
+-- Final susbst, for pretty printing of ...
+%%[3.finalSubst
+ATTR Exp [ substFin: Subst | | ]
+
+SEM Root
+  | Root			exp	.	substFin	= 	@exp.subst
+
+SEM Exp
+  | Lam				lhs	.	pp		:=	ppParens $ "\\" >|< @n >|< ":" >|< pp (@lhs.substFin $-> @tvar_) >|< "." >|< @exp.pp
 %%]
