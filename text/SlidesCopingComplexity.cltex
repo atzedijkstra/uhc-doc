@@ -524,8 +524,8 @@ class Substitutable x where {($->) :: Subst -> x -> x}
   Can we \Emph{scale up}?
   
   \begin{itemize}
-    \item The things/aspects we want to specify/compute per language construct?
-    \item The number of language constructs?
+    \item The things/aspects |a1, a2, ...| we want to specify/compute per language construct?
+    \item The number of language features/constructs |f1, f2, ...|?
   \end{itemize}
   
   \pause
@@ -574,7 +574,8 @@ data Doc = ...                      ^^ -- pretty print document
 \begin{frame}
   \frametitle{Implementation, pretty printing}
   
-  Leads to nanopasses\CITE{Keep:2013:NFC:2520988}\CITE{laemmel03boilerplate}
+  For independent aspects, this
+  leads to nanopasses\CITE{Keep:2013:NFC:2520988}\CITE{laemmel03boilerplate}
   in compiler: small, maintainable, isolates solution for single (independent) problem
   
   \begin{itemize}
@@ -667,7 +668,8 @@ algoW
   \item A compiler (UUAGC) glues separate specifications, generating functional program, including boilerplate
   \end{itemize}
 
-  Fragments of data flow over tree, we can think in terms of attributes associated with parent and children in AST
+  We can think in terms of attributes associated with parent and children in AST,
+  defining data flow fragments
   
 \end{frame}
 
@@ -820,7 +822,8 @@ SEM Exp
   Similarly: pretty printing
   
   \begin{center}
-  \agpictureAtY{7}{3}{flops2016-keynote/lam1pp}
+  \agpictureAtY{7}{3}{flops2016-keynote/lam1ppApp}
+  \agpicture{flops2016-keynote/lam1ppLam}
   \end{center}
 
 %%[[wrap=safecode
@@ -1333,12 +1336,13 @@ Haskell type class system
   \end{itemize}
   
   Solutions:
+  \pause
   \begin{itemize}
-    \item Its just a Prolog program!
+    \item Just a Prolog program!
     \begin{itemize}
       \item Can we really live with the resulting inefficiencies?
     \end{itemize}
-    \item Its a paradigms mix: deterministic (syntax directed) AG-like and non-deterministic (logic programming, constraint solving, backtracking) Prolog-like programming
+    \item Paradigm mix: deterministic (syntax directed) AG-like and non-deterministic (logic programming, constraint solving, backtracking) Prolog-like programming
     \begin{itemize}
       \item Given a declarative set of (type) rules, can we figure out what can be done using which paradigm?
     \end{itemize}
@@ -1348,16 +1352,16 @@ Haskell type class system
 
 
 \begin{frame}
-  \frametitle{Implementation: multiple passes}
+  \frametitle{Implementation: multiple visits/passes}
     
   Solutions explored in the context of UHC and UUAGC:
 
   Implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
   for which a combi of AG and constraint solving solutions can be generated
   \begin{itemize}
-    \item Explicit scheduling for attribute evaluation: visit sequences
+    \item Explicit scheduling for attribute evaluation: sequence of visits/passes
     \begin{itemize}
-      \item Multipass traversal, each pass a coroutine
+      \item Each visit/pass a coroutine
     \end{itemize}
     \item Can be invoked syntax directed or uncoupled from syntax (as part of constraint solving)
     \item Can backtrack; can give partial results
@@ -1378,9 +1382,9 @@ Haskell type class system
 %%@SlidesCopingComplexity.implPreamble
 
 \begin{frame}
-  \frametitle{Implementation: multiple passes}
+  \frametitle{Implementation: multiple visits/passes}
   
-  Example: need for multipass support
+  Example: need for visits/passes
   
   \begin{itemize}
     \item Small change in running example: pretty print of lambda expression should include inferred type
@@ -1395,13 +1399,19 @@ Haskell type class system
     \item We know the type: type variable + substitution
   \end{itemize}
 
+  Substitution |subst| only known after type inference of whole program is done: pass final |subst| (as |substFin|) from |Root| downwards as 2nd pass/visit
+
 \end{frame}
 
 
 \begin{frame}
-  \frametitle{Implementation: multiple passes}
+  \frametitle{Implementation: multiple visits/passes}
   
-  Substitution only known after type inference of whole program is done: pass it from |Root| downwards as 2nd pass/visit
+  \begin{center}
+  \agpictureScaled{0.7}{flops2016-keynote/lam1finsubstRoot}
+  \agpictureScaledAtY{8}{3}{0.7}{flops2016-keynote/lam1finsubstLam}
+  \end{center}
+
 %%[[wrap=safecode
 ATTR Exp [ substFin: Subst | | ]
 
@@ -1410,7 +1420,7 @@ SEM Root
 
 SEM Exp
   | Lam             lhs .   pp          =   "\\"  >|< @n
-                                                  >|< ":" >|< pp (@lhs.substFin $-> @tvar_)
+                                                  >|< ":" >|< pp (@lhs.substFin $-> @v)
                                                   >|< "." >|< @exp.pp
 %%]]  
     
@@ -1418,28 +1428,29 @@ SEM Exp
 
 
 \begin{frame}
-  \frametitle{Implementation: multiple passes}
+  \frametitle{Implementation: multiple visits/passes}
   
   UUAGC analyses dependencies to figure out that there are 2 visits
 
 {\tiny
 %%[[wrap=safecode
-type T_Exp = Env -> Subst -> Int -> (Subst,Ty,Int,T_Exp_1)                  			^^ -- 1st visit (type)
-type T_Exp_1 = Subst -> ( Err,PP_Doc)                                       			^^ -- 2nd visit (type)
-sem_Exp_App :: T_Exp -> T_Exp -> T_Exp                                      			^^ -- 1st visit
+type T_Exp = Env -> Subst -> Int -> (Subst,Ty,Int,T_Exp_1)                                      ^^ -- 1st visit (type)
+type T_Exp_1 = Subst -> ( Err,PP_Doc)                                                           ^^ -- 2nd visit (type)
+sem_Exp_App :: T_Exp -> T_Exp -> T_Exp                                                          ^^ -- 1st visit
 sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
-  let  (_fOuniq,_uniq1) = rulerMk1Uniq _lhsIuniq
-       ( _fIsubst,_fIty,_fIuniq,f_1) = f_ _lhsIenv _lhsIsubst _fOuniq
-       _tvar_ = mkTyVar _uniq1
-       ( _aIsubst,_aIty,_aIuniq,a_1) = a_ _lhsIenv _fIsubst _fIuniq
-       (_subst_u_,_errUnify) = unify (_aIsubst $-> _fIty) (TyArr _aIty _tvar_)			^^
-       sem_Exp_1 = \ _lhsIsubstFin ->                                       			^^ -- 2nd visit
-         let  ( _aIerr,_aIpp) = a_1 _lhsIsubstFin
-              ( _fIerr,_fIpp) = f_1 _lhsIsubstFin
-         in   (  _errUnify ++ _fIerr ++ _aIerr
-              ,  _fIpp >#< ppParens _aIpp >|< ppErr _errUnify )
-  in   (  _subst_u_ $-> _aIsubst, _subst_u_ $-> _tvar_
-       ,  _aIuniq, sem_Exp_1 )
+  let     BLGRAY (_fOuniq,_uniq1) = rulerMk1Uniq _lhsIuniq
+  BLGRAY  BLGRAY ( _fIsubst,_fIty,_fIuniq,f_1) = f_ _lhsIenv _lhsIsubst _fOuniq
+  BLGRAY  BLGRAY _tvar_ = mkTyVar _uniq1
+  BLGRAY  BLGRAY ( _aIsubst,_aIty,_aIuniq,a_1) = a_ _lhsIenv _fIsubst _fIuniq
+  BLGRAY  BLGRAY (_subst_u_,_errUnify) = unify (_aIsubst $-> _fIty) (TyArr _aIty _tvar_)    ^^
+          sem_Exp_1 = \ _lhsIsubstFin ->                                                    ^^ -- 2nd visit
+  BLGRAY  BLGRAY   BLGRAY let  BLGRAY ( _aIerr,_aIpp) = a_1 _lhsIsubstFin
+  BLGRAY  BLGRAY   BLGRAY      BLGRAY ( _fIerr,_fIpp) = f_1 _lhsIsubstFin
+  BLGRAY  BLGRAY   BLGRAY in   BLGRAY ( _errUnify ++ _fIerr ++ _aIerr
+  BLGRAY  BLGRAY   BLGRAY      BLGRAY , _fIpp >#< ppParens _aIpp >|< ppErr _errUnify )
+  in      BLGRAY (  BLGRAY _subst_u_ $-> _aIsubst, _subst_u_ $-> _tvar_
+  BLGRAY  BLGRAY ,  BLGRAY _aIuniq
+          BLGRAY ,  sem_Exp_1 )
 %%]]  
 }
 
@@ -1447,8 +1458,95 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 
 \end{frame}
 
+
 %}
   
+
+\begin{frame}
+  \frametitle{Implementation: multiple visits/passes}
+  
+  Example, statistics for UHC
+  \begin{itemize}
+    \item For analysis of expression terms: 8 visits
+    \begin{center}
+    \begin{tabular}{l||p{.5\linewidth}lll}
+       &  & \multicolumn{3}{l}{\textbf{nr of}} \\ 
+       & \textbf{deals with} & \textbf{inh} & \textbf{syn} & \textbf{inh+syn} \\ \hline
+        0 & source text info & & & 1 \\
+        1 & unique (fresh) identifier generation & & 1 & 1 \\
+        2 & type/kind env & 3 & & 1 \\
+        3 & kind/polarity inference/checking & 6 & & 3 \\
+        4 & class env, final type/kind env, datatype gathering & 4 & & 1 \\
+        5 & new class/instance gathering & 1 & 4 & \\
+        6 & CHR env, value env, type inference & 8 & 5 & 1 \\
+        7 & final value env, error gathering, ...  & 9 & 31 & 1 \\ \hline
+          &  & 31 & 41 & 9 \\
+    \end{tabular}
+    \end{center}
+  \end{itemize}
+  
+\end{frame}
+
+  
+
+\begin{frame}
+  \frametitle{Moments of reflection: UUAGC, |Ruler|, (non)determinism}
+  
+  UUAGC
+  
+  \begin{itemize}
+    \item Great for 'tree-oriented' programming: syntax directed, deterministic
+    \item Dependency analysis gives efficient (strict) visit based code
+    \item Independent specifications for attributes are combined
+    \item Generates boilerplate code
+    \item Manages \Emph{complexity} of aspects
+  \end{itemize}
+  
+  Used a lot in UHC, and in other tools as well
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection: UUAGC, |Ruler|, (non)determinism}
+  
+  |Ruler|
+  
+  \begin{itemize}
+    \item In addition to UUAGC: pretty (\latex) printing of type rules
+    \item Inspired exploration of visits as target machine model for checkers using syntax directedness, constraint solving, and backtracking
+  \end{itemize}
+  
+  But, as it is, |Ruler| not used anymore in UHC as it offers too little on top of UUAGC
+
+  Management of \Emph{complexity} (of choice) of implementation mechanisms: still unresolved
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection: UUAGC, |Ruler|, (non)determinism}
+  
+  Nondeterminism
+  
+  \begin{itemize}
+    \item In declarative specification (of rules)
+    \begin{itemize}
+      \item Convert to algorithmic specification
+      \item The \Emph{ideal} would be to annotate (in |Ruler|) which mechanism (|`elem` {|syntax directedness, unification, constraint solving, ...|}|) should be used
+    \end{itemize}
+    \item In the language (for which we specify rules)
+    \begin{itemize}
+      \item Language specification may allow ambiguity
+      \item In Haskell: higher ranked types, overlapping instances, (in UHC) local instances
+      \item Language mechanisms for explicitly disambiguating: type signatures, functional dependencies, (in UHC) named instances
+      \item The \Emph{ideal} programming language should offer for each implicit mechanism possibly leading to ambiguity an explicit mechanism for disambiguation
+    \end{itemize}
+  \end{itemize}
+  
+
+\end{frame}
+
 
 
 \begin{frame}

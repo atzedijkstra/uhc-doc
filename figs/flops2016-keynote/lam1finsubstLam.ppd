@@ -1,0 +1,21 @@
+prod Exp : Lam
+attrs
+  inh substFin : Subst
+  syn pp : Doc
+
+children
+  term n : Exp
+  nonterm e : Exp
+    attrs
+      inh substFin : Subst
+      syn pp : Doc
+
+locals
+  loc v
+
+flows
+  lhs.in.substFin -> e.in.substFin
+  loc.v -> lhs.out.pp
+  n -> lhs.out.pp
+  e.out.pp -> lhs.out.pp
+  lhs.in.substFin -> lhs.out.pp downwards

@@ -1,0 +1,15 @@
+prod Exp : Lam
+attrs
+  syn pp : Doc
+
+children
+  term n : Exp
+  nonterm e : Exp
+    attrs
+      syn pp : Doc
+
+locals
+
+flows
+  n -> lhs.out.pp
+  e.out.pp -> lhs.out.pp

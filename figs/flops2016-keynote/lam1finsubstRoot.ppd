@@ -1,0 +1,15 @@
+prod Root : Root
+attrs
+
+children
+  nonterm e : Exp
+    attrs
+	  inh subst : Subst
+	  inh substFin : Subst
+	  syn subst : Subst
+
+locals
+
+flows
+  e.out.subst -> e.in.substFin upwards
+
