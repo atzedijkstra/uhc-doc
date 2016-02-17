@@ -358,7 +358,7 @@ isEofOrBlank (' ':_) = True
 isEofOrBlank ('\n':_) = True
 %%]
 
-%%[1.algowMinHs hs
+%%[1.algowInHs hs
 ------------------------------------------------------------
 -- Algo W in Haskell
 ------------------------------------------------------------
@@ -450,7 +450,7 @@ algowM e = w e
       where (su,e) = unify t1 t2
 %%]
 
-%%[2 -1.algowMinHs ag import(Lam_A_ruler)
+%%[2 -1.algowInHs ag import(Lam_A_ruler)
 ------------------------------------------------------------
 -- AG part
 ------------------------------------------------------------
@@ -501,7 +501,7 @@ SEM Exp
 ATTR Exp [ substFin: Subst | | ]
 
 SEM Root
-  | Root			exp	.	substFin	= 	@exp.subst
+  | Root			exp	.	substFin= 	@exp.subst
 
 SEM Exp
   | Lam				lhs	.	pp		:=	ppParens $ "\\" >|< @n >|< ":" >|< pp (@lhs.substFin $-> @tvar_) >|< "." >|< @exp.pp

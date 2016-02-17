@@ -71,6 +71,8 @@
 
 %format oplus	= "\oplus"
 %format otimes	= "\otimes"
+%format otimesi(i)	= otimes "_{" i "}"
+%format `subseteq`	= "\subseteq"
 
 %format TyInt	= "Int"
 
@@ -100,12 +102,28 @@
       \item From few to many (combined) language features
     \end{itemize}
     
-    \item \Emph{Goal}: keep specification as simple as possible
+    \item \Emph{Approach}: keep specifications as simple as possible
     \begin{itemize}
       \item Compositionality (divide and conquer)
       \item DSL (Domain Specific Language) for recurring problems
       \item Generate (e.g. boilerplate code)
       \item Consistency between specifications
+    \end{itemize}
+    
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{{UHC}: Coping with Compiler {Complexity}}
+
+  \begin{itemize}
+    \item Assumptions
+    \begin{itemize}
+      \item Basic Haskell
+      \item Type systems (Hindley-Milner in particular)
     \end{itemize}
     
   \end{itemize}
@@ -165,8 +183,14 @@
   
   \begin{itemize}
   \item Story thread: write a smallish UHC
-  \item Observe what is or will be problematic
   \item Solutions tried for UHC, lessons learned, unexplored topics
+  \pause
+  \item While time left
+    \begin{itemize}
+      \item Write a compiler fragment
+      \item Observe/reflect upon problematic issues
+      \item Explore solutions (taken for UHC)
+    \end{itemize}
   \end{itemize}
 
 \end{frame}
@@ -419,26 +443,26 @@ Occurs: v8
 \begin{frame}
   \frametitle{Implementation}
 
-Haskell implementation of Algorithm W
+  Haskell implementation of Algorithm W
 
 %%[[wrap=safecode
 algoW ::  Env   -> (  Subst, Int)  ->  Exp   -> (  Ty, (   Subst, Int), Err)
           Env_  ;     Subst_       :-  exp   :     Ty_ ~>  Subst_
 %%]]
 
-\begin{center}
-\begin{tabular}{lll}
-\textbf{Type} &  &  \\ \hline
-|Env| & |Env_| & scoped environment, mapping from identifiers to types \\
-|Exp| & | Exp_| & term AST \\
-|Ty| & | Ty_| & types \\
-|Int| & & unique number generation, for fresh type variables \\
-|Subst| & | Subst_| & substitution, mapping type variables to types \\
-|Err| & & errors \\
-\end{tabular}
-\end{center}
-
-Syntax directed rules now allow pattern match on |Exp| to deterministically choose the right rule
+  \begin{center}
+  \begin{tabular}{lll}
+  \textbf{Type} &  &  \\ \hline
+  |Env| & |Env_| & scoped environment, mapping from identifiers to types \\
+  |Exp| & | Exp_| & term AST \\
+  |Ty| & | Ty_| & types \\
+  |Int| & & unique number generation, for fresh type variables \\
+  |Subst| & | Subst_| & substitution, mapping type variables to types \\
+  |Err| & & errors \\
+  \end{tabular}
+  \end{center}
+  
+  Syntax directed rules now allow pattern match on |Exp| to deterministically choose the right rule
 
 \end{frame}
 
@@ -589,7 +613,7 @@ data Doc = ...                      ^^ -- pretty print document
 \begin{frame}
   \frametitle{Implementation, pretty printing}
   
-  The reality here is that |pp| and |algoW| are dependent:
+  The reality (complexity) here is that |pp| and |algoW| are dependent:
   pretty printing uses the inferred type (|te|) and error messages (|eu|) of |algoW|
 
 %%[[wrap=safecode
@@ -650,7 +674,7 @@ algoW
           ) => Exp -> m Ty
 %%]]
 \item Boilerplate partially done by monad transformer lifting
-\item Allows monadic ordering: state left-to-right, by default no mutual recursion, ...
+\item Enforces monadic ordering/scheduling
 \item Possibly constrained by underlying type system%, may require a monad per aspect
 \end{itemize}
 
@@ -859,6 +883,19 @@ SEM Exp
       \item Integrates with Haskell ecosystem
     \end{itemize}
   \end{itemize}
+
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+  
+  Example, statistics for UHC: use of UUAGC (and other languages)
+  
+  \begin{center}
+  \FigScaledPDF{0.6}{codesize}
+  \end{center}
 
   \pause
   But...
@@ -1316,11 +1353,11 @@ Haskell type class system
     \end{itemize}
   \end{itemize}
   
-  But ...
+  In general
   
   \pause
   \begin{itemize}
-    \item The more complex a type system, the more must be done via constraint solving
+    \item The more complex a type system, the less can be done syntax directed, the more must be done via constraint solving (or backtracking)
   \end{itemize}
   
 \end{frame}
@@ -1354,8 +1391,6 @@ Haskell type class system
 \begin{frame}
   \frametitle{Implementation: multiple visits/passes}
     
-  Solutions explored in the context of UHC and UUAGC:
-
   Implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
   for which a combi of AG and constraint solving solutions can be generated
   \begin{itemize}
@@ -1367,7 +1402,7 @@ Haskell type class system
     \item Can backtrack; can give partial results
   \end{itemize}
   
-  But...
+  Exploration in context of UUAGC, inspired by UHC
   \pause
   \begin{itemize}
     \item 
@@ -1430,7 +1465,7 @@ SEM Exp
 \begin{frame}
   \frametitle{Implementation: multiple visits/passes}
   
-  UUAGC analyses dependencies to figure out that there are 2 visits
+  UUAGC generates 2 visits (don't try to understand...)
 
 {\tiny
 %%[[wrap=safecode
@@ -1495,14 +1530,18 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   UUAGC
   
   \begin{itemize}
-    \item Great for 'tree-oriented' programming: syntax directed, deterministic
+    \item Great for: 'tree-oriented' programming: syntax directed, deterministic
+    \item Great for: independent specifications for attributes, combined later on
     \item Dependency analysis gives efficient (strict) visit based code
-    \item Independent specifications for attributes are combined
     \item Generates boilerplate code
     \item Manages \Emph{complexity} of aspects
   \end{itemize}
   
   Used a lot in UHC, and in other tools as well
+  
+  Still have to look at: combining language features (not just aspects per feature)
+  
+  Still have to look at: embedding in Haskell to improve usability
 
 \end{frame}
 
@@ -1548,6 +1587,288 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 \end{frame}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Language variants: Shuffle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Language variants: Shuffle}
+
+
+\begin{frame}
+  \frametitle{Compositionality of language features}
+  
+  Language features versus implementation aspects  
+
+  \begin{itemize}
+    \item UUAGC takes care about compositionality of aspects of language features (type system, pretty printing, ...)
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item XX
+  \end{itemize}
+  
+  How does UHC deal with compositionality of language features?
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Compositionality of language features}
+  
+  Desired compositionality:
+
+  \begin{itemize}
+    \item Informally: need not modify individual specifications when composing
+    \item More formally: textual specifications of semantics |s1| and |s2| for language features |f1| and |f2|
+     \emph{compose} when for all interpretations |i| and interpretation compositions |otimesi(i)| for |i|,
+     for the textual concatenation holds |i (s1 ++ s2) = i s1 ^ otimesi(i) ^ i s2|,
+     where |i s| is a \emph{correct} interpretation according to some unspecified notion of correctness |c f| of its corresponding language feature |f|,
+     for which we assume we have |c f|, |f `subseteq` {f1,f2}|
+  \end{itemize}
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Compositionality of language features}
+  
+  Not a new idea:
+
+  \begin{center}
+  \begin{tabular}{l||p{.30\linewidth}p{.30\linewidth}}
+                  & \multicolumn{2}{l}{ \textbf{|i=|}} \\
+  \textbf{System}  & \textbf{operational semantics} &  \textbf{verifying code} \\ \hline
+  TinkerType\CITE{levin99tinkertype} & \checkmark & \checkmark (unchecked) \\
+  PlanCompS\CITE{Churchill:2015ey}  & \checkmark & \checkmark \\
+  |Shuffle|(UHC) & ? & ? \\
+  \end{tabular}
+  \end{center}
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Compositionality of language features}
+  
+  Is language feature \Emph{composition} possible?
+  
+  \begin{itemize}
+    \item Does |c f, f `subseteq` {f1,f2}| imply that their specificaitons |s1| and |s2| compose?
+    % \item Compositional for arbitrary specifications |s1| and |s2| (of |f1| and |f2|)?
+    % \item Is semantics specification associative, |(s1 ++ s2) ++ s3 = s1 ++ (s2 ++ s3)|, where both |i (s1 ++ s2)| and |i (s2 ++ s3)| are correct interpretations?
+    % \item (If associative, is semantics specification commutative, for example |(s1 ++ s2) ++ s3 = s2 ++ (s1 ++ s3)|, where both |i (s1 ++ s2)| and |i (s1 ++ s3)| are correct interpretations?)
+  \end{itemize}
+  
+  In context of UHC: \Emph{no}
+  
+  \begin{itemize}
+    \item A language feature may rely on another language feature: Haskell type class system requires expressions and/or type system
+    \begin{itemize}
+      \item Ordering between language features, 'later' features have no meaning on their own
+    \end{itemize}
+    \item A language feature may have to override the specification of another feature when combined: Haskell type class system changes (e.g.) code generation
+    \begin{itemize}
+      \item Composing can potentially require (ad-hoc, implementation specific) changes on individual specifications of features
+    \end{itemize}
+  \end{itemize}
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Compositionality of language features}
+  
+  Expression Problem\CITE{Wadler:AR2HUucS} 
+  
+  \begin{itemize}
+    \item Feature: structure, data type, AST
+    \item Aspect: computation, semantics
+  \end{itemize}
+
+  \begin{center}
+  \def\FBox{\fbox{
+	\begin{minipage}{3em}
+		\hfill\vspace{1.5ex}
+	\end{minipage}
+	}}
+  \begin{tabular}{rr||llll}
+                    & ...    & \FBox{}    & \FBox{}      & \FBox{} \\ 
+                    & pretty & \FBox{}    & \FBox{}      & \FBox{} \\ 
+  aspect $\uparrow$ & typing & \FBox{}    & \FBox{}      & \FBox{} \\ \hline
+                    &        & expression & type classes & ... \\ 
+                    &        & \multicolumn{2}{l}{$\rightarrow$ feature} \\
+  \end{tabular}
+  \end{center}
+  
+  \begin{itemize}
+    \item Compositionality: able to independently fill in the squares
+    \item 'Requires' ordering: square higher in 'feature' dimension can only be defined on top of lower square
+  \end{itemize}
+    
+  How does UHC deal with compositionality of language features?
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Language variants: |Shuffle|}
+  
+  For UHC:
+
+  \begin{itemize}
+    \item Composing requires ad-hoc composition specific overriding
+    \begin{itemize}
+      \item Restrict to ordering of features building on top of each other
+      \item Aspects as independent of features as possible
+    \end{itemize}
+    \item Features and aspects are relevant for all artefacts of a compiler
+    \begin{itemize}
+      \item AG files, Haskell files, C (runtime system), ...
+      \item Only manipulation of file content, semantics agnostic
+    \end{itemize}
+  \end{itemize}
+
+  Tool |Shuffle| selects and shuffles around text fragments annotated with aspect and variant (language feature)
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Language variants: |Shuffle|}
+  
+  Example from UHC:
+  
+%%[[wrap=verbatim
+ %%[(2 hmtyinfer || hmtyast).mkTyVar hs
+ mkTyVar :: TyVarId -> Ty
+ mkTyVar tv = Ty_Var tv
+ %%]
+%%]]
+
+Haskell (hs) fragment to be included in the compiler for variant 2, when incorporating type AST (hmtyast) or type inference (hmtyinfer)
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Language variants: |Shuffle|}
+  
+  Example from UHC:
+  
+%%[[wrap=verbatim
+ %%[(3 hmtyinfer || hmtyast).mkTyVar -2.mkTyVar hs
+ mkTyVar :: TyVarId -> Ty
+ mkTyVar tv = Ty_Var tv TyVarCateg_Plain
+ %%]
+%%]]
+
+Override a fragment for variant 3
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Language variants: |Shuffle|}
+  
+  |Shuffle| \Emph{good news}
+  
+  \begin{itemize}
+    \item Can build compiler per variant
+    \item Can turn on/off aspects (configuration management)
+    \item Shuffle fragments can be referred to by name for text inclusion (literate programming)
+    \item Helps with debugging
+  \end{itemize}
+
+  \pause
+  |Shuffle| \Emph{bad news}
+
+  \begin{itemize}
+    \item Rather crude/simple tool
+    \item Makes build system complex, adds another language to be learned
+  \end{itemize}
+
+  \pause
+  |Shuffle| \Emph{worse news}
+  
+  \begin{itemize}
+    \item Even limiting compositionality to particular feature ordening does not 'work' ...
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Moments of reflection: |Shuffle|, compositionality}
+  
+  Original approach/desire: use compositionality to simplify specification of UHC
+
+  Does it work? Can it be done?
+  
+  \begin{itemize}
+    \item Yes, when aspects/features are independent
+  \end{itemize}
+  
+  When restricted to feature ordening in the presence of dependency between features
+  
+  \begin{itemize}
+    \item Features become tightly coupled
+    \item Subsequent feature may need redesign of implementation of previous feature
+    \begin{itemize}
+      \item Either must override a lot, or design for the last feature
+      \item Making the first feature also depend on later variants
+    \end{itemize}
+  \end{itemize}
+
+  Conjecture: compositionality probably feasible for simple languages, but not for the complex ones (like Haskell)
+  
+\end{frame}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Summary
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Summary}
+
+
+\begin{frame}
+  \frametitle{Summary}
+  
+  What did we learn from building UHC?
+  
+  \begin{itemize}
+    \item XX
+    \begin{itemize}
+      \item XX
+    \end{itemize}
+    
+    \item XX
+  \end{itemize}
+
+  Acknowledgements
+  
+  \begin{itemize}
+    \item Doaitse Swierstra, Jeroen Fokker, Arie Middelkoop, Marcos Viera, Jeroen Bransen, ...
+  \end{itemize}
+  
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% The rest, leftover material
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
 
@@ -1562,30 +1883,12 @@ Here we are
 
 
 
-\begin{frame}
-  \frametitle{Implementation: |Ruler|}
-  
-  Generating a checker for type rules (i.e. code which verifies) is rather difficult
-  Some answers
-  \begin{itemize}
-    \item One could generate a Prolog (or similar logic) program, however
-    \begin{itemize}
-      \item This might involve (too much) backtracking, be too inefficient
-    \end{itemize}
-    \item One could generate a more efficient mix of deterministic (syntax driven) AG like code and nondeterministic Prolog like code, however
-    \begin{itemize}
-      \item Need to find out which part of a set of rules can be done deterministically, which part not
-      \item For example...
-    \end{itemize}
-  \end{itemize}
 
-\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Extra stuff
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-
-
-
+\section{Additional topics}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1597,28 +1900,8 @@ Here we are
 
 \begin{frame}
   \frametitle{Type system: non syntax driven complexity}
-
-  \begin{itemize}
-    \item XX
-    \begin{itemize}
-      \item XX
-    \end{itemize}
-    
-    \item XX
-  \end{itemize}
-
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Language variants: Shuffle
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Language variants: Shuffle}
-
-
-\begin{frame}
-  \frametitle{Language variants: Shuffle}
+  
+  CHR, red graph, delayed choice
 
   \begin{itemize}
     \item XX
