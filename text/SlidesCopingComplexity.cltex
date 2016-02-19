@@ -13,7 +13,7 @@
 %%% Config flags
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%let draft = True
+% let draft = True
 
 %%]
 
@@ -120,12 +120,17 @@
   \frametitle{{UHC}: Coping with Compiler {Complexity}}
 
   \begin{itemize}
-    \item Assumptions
+    \item \Emph{Assumptions}
     \begin{itemize}
       \item Basic Haskell
       \item Type systems (Hindley-Milner in particular)
     \end{itemize}
     
+    \item \Emph{Lesson(s)}
+    \begin{itemize}
+      \item Putting theory into practice (by implementing) is complex, art on its own
+      \item Can be mitigated by tooling, engineering, ...
+    \end{itemize}
   \end{itemize}
 
 \end{frame}
@@ -175,7 +180,7 @@
 
 \end{frame}
 
-%endif
+%endif % draft
 
 
 \begin{frame}
@@ -1262,7 +1267,7 @@ Haskell type class system
    instance Eq a => Eq [a] where ...
    
    f :: Eq a => a -> a -> Bool          ^^ -- specified or inferred
-   f x y = x == y && x == y             ^^ -- just an example
+   f x y = x == y                       ^^ -- just a (nonsensical) example
 %%]]
 
 \item Extension of running example with qualified types
@@ -1657,7 +1662,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   Is language feature \Emph{composition} possible?
   
   \begin{itemize}
-    \item Does |c f, f `subseteq` {f1,f2}| imply that their specificaitons |s1| and |s2| compose?
+    \item Does |c f, f `subseteq` {f1,f2}| imply that their specifications |s1| and |s2| compose?
     % \item Compositional for arbitrary specifications |s1| and |s2| (of |f1| and |f2|)?
     % \item Is semantics specification associative, |(s1 ++ s2) ++ s3 = s1 ++ (s2 ++ s3)|, where both |i (s1 ++ s2)| and |i (s2 ++ s3)| are correct interpretations?
     % \item (If associative, is semantics specification commutative, for example |(s1 ++ s2) ++ s3 = s2 ++ (s1 ++ s3)|, where both |i (s1 ++ s2)| and |i (s1 ++ s3)| are correct interpretations?)
@@ -1801,13 +1806,45 @@ Override a fragment for variant 3
   \begin{itemize}
     \item Even limiting compositionality to particular feature ordening does not 'work' ...
   \end{itemize}
+  
+  What can be done to mitigate this?
 
 \end{frame}
 
 
 
 \begin{frame}
-  \frametitle{Moments of reflection: |Shuffle|, compositionality}
+  \frametitle{Language variants: |AspectAG|}
+  
+  Type safe embedding in Haskell of parsers, syntax macros, AST definition, Attribute Grammars\CITE{Viera:2013uo} as knittable fragments
+    
+  \begin{center}
+  \FigScaledPDF{0.6}{talk-ag-fly-1st-class-comparison1}
+  \end{center}
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Language variants: |AspectAG|}
+  
+  Example: Oberon compiler (LDTA challenge\CITE{Anonymous:t9Gd69Tm}) implementation demonstrates dealing with expression problem
+  
+  \begin{center}
+  \FigScaledPDF{0.4}{talk-ag-fly-1st-class-comparison2}
+  \end{center}
+  
+  Elegant though inefficient: heavy use of type level programming, template haskell, resulting code difficult to optimize
+  
+  
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Moments of reflection: |Shuffle|, |AspectAG|, compositionality}
   
   Original approach/desire: use compositionality to simplify specification of UHC
 
@@ -1836,6 +1873,56 @@ Override a fragment for variant 3
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Engineering
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Engineering}
+
+\begin{frame}
+  \frametitle{Engineering: incrementality}
+  
+  ``The devil is in the detail''
+
+  \begin{itemize}
+    \item The small seemingly innocent can bite
+  \end{itemize}
+
+  \[
+  \rulerCmdUse{Lamnochng.D.exp.gen.gen}
+  \]
+  
+  Operationally, what does |ftv| do?
+
+  \begin{itemize}
+    \item |Env| may be large, possibly 'naively' holding all imported modules
+    \item Does not scale
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Engineering: incrementality}
+  
+  Observations: 
+
+  \begin{itemize}
+    \item |ftv(Env)| usually is small, empty for each module
+    \item |ftv(Env)| can be incrementally computed
+  \end{itemize}
+
+  In either case: manual tweaking/optimization required
+
+  \begin{itemize}
+    \item Incrementality can be automated\CITE{bransen2015phd-ag-incr}
+  \end{itemize}
+
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Summary
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1848,20 +1935,23 @@ Override a fragment for variant 3
   What did we learn from building UHC?
   
   \begin{itemize}
-    \item XX
-    \begin{itemize}
-      \item XX
-    \end{itemize}
-    
-    \item XX
+    \item From theory to practice is complex!
+    \item Use tools, engineering, dsl's, exploit compositionality
+    \item Some complexity can be engineered away, not all
   \end{itemize}
 
-  Acknowledgements
+  Contributors
   
   \begin{itemize}
     \item Doaitse Swierstra, Jeroen Fokker, Arie Middelkoop, Marcos Viera, Jeroen Bransen, ...
   \end{itemize}
   
+  This talk \& running example demos
+  
+  \begin{itemize}
+    \item Part of \url{https://github.com/atzedijkstra/uhc-doc}
+    \item Built using |Shuffle|, |Ruler|, UUAGC, GHC, \lhstex, \latex
+  \end{itemize}
 
 \end{frame}
 
@@ -1869,6 +1959,8 @@ Override a fragment for variant 3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% The rest, leftover material
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%if draft
 
 \begin{frame}
 
@@ -1882,6 +1974,7 @@ Here we are
 \end{frame}
 
 
+%endif % draft
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1895,7 +1988,7 @@ Here we are
 %%% Type system: non syntax driven complexity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Type system: non syntax driven complexity}
+\subsection{Type system: non syntax driven complexity}
 
 
 \begin{frame}
@@ -1915,16 +2008,21 @@ Here we are
 \end{frame}
 
 
+%if draft
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Attribute Grammar: as EDSL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Attribute Grammar: as EDSL}
+\subsection{Attribute Grammar: as EDSL}
 
 
 \begin{frame}
   \frametitle{Attribute Grammar: as EDSL}
 
+  AspectAG
+  
   \begin{itemize}
     \item XX
     \begin{itemize}
@@ -1941,7 +2039,7 @@ Here we are
 %%% Attribute Grammar: incrementality
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Attribute Grammar: incrementality}
+\subsection{Attribute Grammar: incrementality}
 
 
 \begin{frame}
@@ -1957,6 +2055,9 @@ Here we are
   \end{itemize}
 
 \end{frame}
+
+
+%endif % draft
 
 
 %%]
