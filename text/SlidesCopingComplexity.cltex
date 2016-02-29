@@ -74,10 +74,13 @@
 %format otimesi(i)	= otimes "_{" i "}"
 %format `subseteq`	= "\subseteq"
 
+%format emptyset= "\emptyset"
+
 %format TyInt	= "Int"
 
 %format :=-		= "\mid"
 %format ::-		= "\vDash"
+
 %%]
 
 %%[intro
@@ -96,15 +99,17 @@
       \item Inspiration for tooling
     \end{itemize}
     
-    \item \Emph{Complexity}: Dimensions of complexity
+    \item \Emph{Complexity}: dimensions of complexity
     \begin{itemize}
       \item From specification to implementation
+      \item From deterministic to non-deterministic
       \item From few to many (combined) language features
+      \item From small to large compiler input
     \end{itemize}
     
     \item \Emph{Approach}: keep specifications as simple as possible
     \begin{itemize}
-      \item Compositionality (divide and conquer)
+      \item Compositionality
       \item DSL (Domain Specific Language) for recurring problems
       \item Generate (e.g. boilerplate code)
       \item Consistency between specifications
@@ -129,7 +134,7 @@
     \item \Emph{Lesson(s)}
     \begin{itemize}
       \item Putting theory into practice (by implementing) is complex, art on its own
-      \item Can be mitigated by tooling, engineering, ...
+      \item Can be mitigated by DSLs, tooling, engineering, ...
     \end{itemize}
   \end{itemize}
 
@@ -188,13 +193,14 @@
   
   \begin{itemize}
   \item Story thread: write a smallish UHC
-  \item Solutions tried for UHC, lessons learned, unexplored topics
+  %\item Solutions tried for UHC, lessons learned, unexplored topics
   \pause
-  \item While time left
+  \item Story `algorithm': While time left interleave
     \begin{itemize}
       \item Write a compiler fragment
       \item Observe/reflect upon problematic issues
-      \item Explore solutions (taken for UHC)
+      \item Explore solutions (as taken for UHC)
+      \item Reflect upon solutions
     \end{itemize}
   \end{itemize}
 
@@ -228,7 +234,7 @@
            |       let n = exp in exp      ^^ -- let binding
 %%]]
 
-\item With a Hindley-Milner type system
+\item With Hindley-Milner type system
 %%[[wrap=safecode
    ty      ::=     Int | ty -> ty | tvar
    pty     ::=     ty | forall tvar . pty
@@ -657,7 +663,7 @@ algoW env st (Exp_App f a) =
   Refactorization in the 'wrong' direction
 
   \begin{itemize}
-  \item Adding an aspect means a manual overhaul of boilerplate code
+  \item Adding an aspect implies a manual overhaul of boilerplate code
   \end{itemize}
 
 \end{frame}
@@ -1358,11 +1364,11 @@ Haskell type class system
     \end{itemize}
   \end{itemize}
   
+  \pause
   In general
   
-  \pause
   \begin{itemize}
-    \item The more complex a type system, the less can be done syntax directed, the more must be done via constraint solving (or backtracking)
+    \item The more complex a type system, the less can be done syntax directed, the more must be done via constraint solving (possibly involving backtracking)
   \end{itemize}
   
 \end{frame}
@@ -1396,6 +1402,8 @@ Haskell type class system
 \begin{frame}
   \frametitle{Implementation: multiple visits/passes}
     
+  Exploration in context of UUAGC, inspired by UHC:
+
   Implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
   for which a combi of AG and constraint solving solutions can be generated
   \begin{itemize}
@@ -1407,7 +1415,6 @@ Haskell type class system
     \item Can backtrack; can give partial results
   \end{itemize}
   
-  Exploration in context of UUAGC, inspired by UHC
   \pause
   \begin{itemize}
     \item 
@@ -1544,9 +1551,10 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   
   Used a lot in UHC, and in other tools as well
   
-  Still have to look at: combining language features (not just aspects per feature)
-  
-  Still have to look at: embedding in Haskell to improve usability
+  \begin{itemize}
+    \item Still have to look at: combining language features (not just aspects per feature)
+    \item Still have to look at: embedding in Haskell to improve usability
+  \end{itemize}
 
 \end{frame}
 
@@ -1606,17 +1614,27 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 
   \begin{itemize}
     \item UUAGC takes care about compositionality of aspects of language features (type system, pretty printing, ...)
-    \begin{itemize}
-      \item XX
-    \end{itemize}
-    
-    \item XX
   \end{itemize}
   
   How does UHC deal with compositionality of language features?
 
 \end{frame}
 
+
+
+%{
+
+%format pi      = p "_i"
+%format si      = s "_i"
+%format fi      = f "_i"
+%format pj      = p "_j"
+%format sj      = s "_j"
+%format fj      = f "_j"
+%format s12     = s "_{1,2}"
+%format pij     = p "_{i,j}"
+%format sij     = s "_{i,j}"
+%format fij     = f "_{i,j}"
+%format <~>     = "\sim"
 
 
 \begin{frame}
@@ -1626,11 +1644,32 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 
   \begin{itemize}
     \item Informally: need not modify individual specifications when composing
-    \item More formally: textual specifications of semantics |s1| and |s2| for language features |f1| and |f2|
-     \emph{compose} when for all interpretations |i| and interpretation compositions |otimesi(i)| for |i|,
-     for the textual concatenation holds |i (s1 ++ s2) = i s1 ^ otimesi(i) ^ i s2|,
-     where |i s| is a \emph{correct} interpretation according to some unspecified notion of correctness |c f| of its corresponding language feature |f|,
-     for which we assume we have |c f|, |f `subseteq` {f1,f2}|
+    \begin{itemize}
+      \item \Emph{ideal}: concatenate textually
+      \item \Emph{reality}: concatenate textually + additional glue/override
+    \end{itemize}
+    \item More formally:
+    \begin{itemize}
+      \item Given (already theoretical/formally well defined) language features |fi| (|i `elem` {1,2}|),
+      %% \item its (already figured out) individual and combined semantics/interpretation |i(f1), i(f2), i(f1 + f2)|,
+      \item (textual) specifications |si| for |fi| for which we have already some notion |<~>| of correctness |si <~> fi|,
+      \item feature combination '|+|' and textual specification concatenation '|++|',
+      \item specific additional specification |s12| to make hold |(s1 ++ s2 ++ s12) <~> (f1 + f2)|,
+      \item if |s12 = emptyset| then specifications |s1, s2| are compositional
+    \end{itemize}
+    \item What about compositionality for |f1 + f2|?
+    \begin{itemize}
+      \item Practical reformulation: given published papers |pi| for |fi|, what about |p1 + p2|?
+    \end{itemize}
+    %% \begin{itemize}
+    %%   \item \Emph{ideal}: type system for such specifications
+    %%   \item \Emph{reality}: no type system
+    %% \end{itemize}
+    %% \item More formally: textual specifications of semantics |s1| and |s2| for language features |f1| and |f2|
+    %%  \emph{compose} when for all interpretations |i| and interpretation compositions |otimesi(i)|,
+    %%  for the textual concatenation holds |i (s1 ++ s2) = i s1 ^ otimesi(i) ^ i s2|,
+    %%  where |i s| is a \emph{correct} interpretation according to some unspecified notion of correctness |c f| of its corresponding language feature |f|,
+    %%  for which we assume we have |c f|, |f `subseteq` {f1,f2}|
   \end{itemize}
   
 \end{frame}
@@ -1659,10 +1698,11 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 \begin{frame}
   \frametitle{Compositionality of language features}
   
-  Is language feature \Emph{composition} possible?
+  Is \Emph{composition} of specifications (for language features) possible?
   
   \begin{itemize}
-    \item Does |c f, f `subseteq` {f1,f2}| imply that their specifications |s1| and |s2| compose?
+    \item Observation: usually |sij /= emptyset| for arbitrary |si,sj|
+    % \item Does |c f, f `subseteq` {f1,f2}| imply that their specifications |s1| and |s2| compose?
     % \item Compositional for arbitrary specifications |s1| and |s2| (of |f1| and |f2|)?
     % \item Is semantics specification associative, |(s1 ++ s2) ++ s3 = s1 ++ (s2 ++ s3)|, where both |i (s1 ++ s2)| and |i (s2 ++ s3)| are correct interpretations?
     % \item (If associative, is semantics specification commutative, for example |(s1 ++ s2) ++ s3 = s2 ++ (s1 ++ s3)|, where both |i (s1 ++ s2)| and |i (s1 ++ s3)| are correct interpretations?)
@@ -1796,18 +1836,20 @@ Override a fragment for variant 3
   |Shuffle| \Emph{bad news}
 
   \begin{itemize}
-    \item Rather crude/simple tool
+    \item Rather crude/simple 'textual only' tool
     \item Makes build system complex, adds another language to be learned
   \end{itemize}
 
-  \pause
-  |Shuffle| \Emph{worse news}
+  % \pause
+  % |Shuffle| \Emph{worse news}
+  % 
+  % \begin{itemize}
+  %   \item Even limiting compositionality to some feature order does not 'work' ...
+  % \end{itemize}
+  % 
+  % What can be done to mitigate this?
   
-  \begin{itemize}
-    \item Even limiting compositionality to particular feature ordening does not 'work' ...
-  \end{itemize}
   
-  What can be done to mitigate this?
 
 \end{frame}
 
@@ -1844,7 +1886,7 @@ Override a fragment for variant 3
 
 
 \begin{frame}
-  \frametitle{Moments of reflection: |Shuffle|, |AspectAG|, compositionality}
+  \frametitle{Moments of reflection: compositionality}
   
   Original approach/desire: use compositionality to simplify specification of UHC
 
@@ -1871,6 +1913,26 @@ Override a fragment for variant 3
 
 
 
+\begin{frame}
+  \frametitle{Moments of reflection: compositionality}
+  
+  What is known about feature composition and their (in)dependence?
+
+  \begin{itemize}
+    \item \Emph{ideal}: for every paper |pi, pj| (describing theory, semantics, etc) for feature |fi, fj| there is a paper |pij| for |fi + fj|
+    \item \Emph{reality}: there is not
+    \begin{itemize}
+      \item Left to the implementer (to figure something out)
+      % \item Might even require 
+    \end{itemize}
+  \end{itemize}
+  
+\end{frame}
+
+
+%}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Engineering
@@ -1879,31 +1941,29 @@ Override a fragment for variant 3
 \section{Engineering}
 
 \begin{frame}
-  \frametitle{Engineering: incrementality}
+  \frametitle{Engineering: the devil is in the detail (1)}
   
-  ``The devil is in the detail''
-
-  \begin{itemize}
-    \item The small seemingly innocent can bite
-  \end{itemize}
+  The small seemingly innocent can bite
 
   \[
   \rulerCmdUse{Lamnochng.D.exp.gen.gen}
   \]
   
-  Operationally, what does |ftv| do?
+  |ftv| traverses |Env|
 
   \begin{itemize}
     \item |Env| may be large, possibly 'naively' holding all imported modules
     \item Does not scale
   \end{itemize}
+  
+  Need for incrementality
 
 \end{frame}
 
 
 
 \begin{frame}
-  \frametitle{Engineering: incrementality}
+  \frametitle{Engineering: the devil is in the detail (1)}
   
   Observations: 
 
@@ -1981,14 +2041,14 @@ Here we are
 %%% Extra stuff
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Additional topics}
+\section*{Additional topics}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Type system: non syntax driven complexity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Type system: non syntax driven complexity}
+\subsection*{Type system: non syntax driven complexity}
 
 
 \begin{frame}
