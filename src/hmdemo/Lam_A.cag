@@ -55,6 +55,10 @@ mkTyVar = TyVar . flip TV 0
 data Ty = TyInt | TyVar TyVar | TyArr Ty Ty | TyAll TyVar Ty | TyErr
   deriving Show
 
+tyIsVar :: Ty -> Maybe TyVar
+tyIsVar (TyVar v) = Just v
+tyIsVar _         = Nothing
+
 instance PP Ty where
   pp t = p [] t
     where
@@ -94,6 +98,10 @@ emptySubst = []
 subst1 v t = [(v,t)]
 substDel v s = filter ((v==) . fst) s
 
+substLookup :: TyVar -> Subst -> Maybe Ty
+substLookup v s = lookup v s >>= \t -> (tyIsVar t >>= flip substLookup s) <|> return t      -- efficient, not eager subst application
+-- substLookup v s = lookup v s                                                             -- inefficient, eager subst application
+
 class Substitutable x where
   ($->) :: Subst -> x -> x
 
@@ -101,13 +109,14 @@ instance Substitutable Env where
   s $-> env = map (\(n,t) -> (n, s $-> t)) env
 
 instance Substitutable Subst where
-  s1 $-> s2 = s1 ++ s2
+  s1 $-> s2 = s1 ++ s2                                          -- efficient, not eager subst application
+  -- s1 $-> s2 = s1 ++ map (\(v,t) -> (v, s1 $-> t)) s2         -- inefficient, eager subst application
 
 instance Substitutable Ty where
-  s1 $-> t = case t of
-    TyVar v -> maybe t (s1 $->) $ lookup v s1
-    TyArr a r -> TyArr (s1 $-> a) (s1 $-> r)
-    TyAll v t -> TyAll v ((v `substDel` s1) $-> t)
+  s $-> t = case t of
+    TyVar v -> maybe t (s $->) $ substLookup v s
+    TyArr a r -> TyArr (s $-> a) (s $-> r)
+    TyAll v t -> TyAll v ((v `substDel` s) $-> t)
     _ -> t
 
 -- Nm
@@ -458,7 +467,7 @@ algowM e = w e
 WRAPPER Root
 
 DATA Root
-  | Root			exp	:  	Exp
+  | Root            exp :   Exp
 
 -- Ty
 ATTR Root [ | | ty: Ty ]
@@ -467,32 +476,32 @@ ATTR Root [ | | ty: Ty ]
 ATTR Exp [ | uniq: Int | ]
 
 SEM Root
-  | Root			exp	.	uniq 	= 	0
+  | Root            exp .   uniq    =   0
   
 -- Env
 SEM Root
-  | Root			exp	.	env		= 	emptyEnv
-  						.	subst	=	emptySubst
+  | Root            exp .   env     =   emptyEnv
+                        .   subst   =   emptySubst
 
 -- Error
 ATTR Exp Root [ | | err USE {++} {noErr} : Err ]
 
 SEM Exp
-  | Var				lhs	.	err		=	@errLookup
-  | App				lhs	.	err		=	@errUnify ++ @f.err ++ @a.err
+  | Var             lhs .   err     =   @errLookup
+  | App             lhs .   err     =   @errUnify ++ @f.err ++ @a.err
 
 -- PP
 ATTR Exp Root [ | | pp: PP_Doc ]
 
 SEM Root
-  | Root			lhs	.	pp		=	@exp.pp
+  | Root            lhs .   pp      =   @exp.pp
 
 SEM Exp
-  | Int				lhs	.	pp		= 	pp @i
-  | Var				lhs	.	pp		=	pp @n >|< ppErr @errLookup
-  | App				lhs	.	pp		=	@f.pp >#< ppParens @a.pp >|< ppErr @errUnify
-  | Lam				lhs	.	pp		=	ppParens $ "\\" >|< @n >|< "." >|< @exp.pp
-  | Let				lhs	.	pp		=	"let" >#< @n >#< (":" >#< pp @pty_ >-< "=" >#< @exp.pp) >#< "in" >-< @body.pp
+  | Int             lhs .   pp      =   pp @i
+  | Var             lhs .   pp      =   pp @n >|< ppErr @errLookup
+  | App             lhs .   pp      =   @f.pp >#< ppParens @a.pp >|< ppErr @errUnify
+  | Lam             lhs .   pp      =   ppParens $ "\\" >|< @n >|< "." >|< @exp.pp
+  | Let             lhs .   pp      =   "let" >#< @n >#< (":" >#< pp @pty_ >-< "=" >#< @exp.pp) >#< "in" >-< @body.pp
 
 %%]
 
@@ -501,8 +510,8 @@ SEM Exp
 ATTR Exp [ substFin: Subst | | ]
 
 SEM Root
-  | Root			exp	.	substFin= 	@exp.subst
+  | Root            exp .   substFin=   @exp.subst
 
 SEM Exp
-  | Lam				lhs	.	pp		:=	ppParens $ "\\" >|< @n >|< ":" >|< pp (@lhs.substFin $-> @tvar_) >|< "." >|< @exp.pp
+  | Lam             lhs .   pp      :=  ppParens $ "\\" >|< @n >|< ":" >|< pp (@lhs.substFin $-> @tvar_) >|< "." >|< @exp.pp
 %%]

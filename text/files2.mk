@@ -245,9 +245,9 @@ $(TEXT_PDFONLY_VARIANTS) $(TEXT_DOCLTX_VARIANTS) : % : $(DOC_PREFIX)%.pdf
 #	$(MAKE) INCLUDE_DERIVED_MK=yes $(DOC_PREFIX)$@.pdf
 #	open $(DOC_PREFIX)$@.pdf
 
-text-variant-latexmk: $(TEXT_ALL_PDFONLY_DPD) $(TEXT_BIB_ALL_DRV)
+text-variant-latexmk: $(TEXT_ALL_PDFONLY_DPD) $(TEXT_BIB_ALL_DRV) $(TEXT_BIB_DRV)
 	mkdir -p $(dir $(TEXT_BLD_PDF))
-	cd $(TEXT_TMP_VARIANT_PREFIX) ; $(LATEXMK) $(TEXT_MAIN)
+	cd $(TEXT_TMP_VARIANT_PREFIX) ; $(LATEXMK) -f $(TEXT_MAIN)
 	cp $(TEXT_TMP_VARIANT_PREFIX)$(TEXT_MAIN).pdf $(TEXT_BLD_PDF)
 
 text-variant-dflt-once: $(TEXT_ALL_PDFONLY_DPD)
@@ -398,12 +398,16 @@ $(TEXT_RULES_EXPLAIN_3_DRV_CAG): $(EHC_RULES_3_SRC_RL2) $(RULER2)
 #	mkdir -p $(@D)
 #	cp $< $@
 
-$(TEXT_BIB_DRV): $(TEXT_BIB1_SRC) $(TEXT_BIB2_SRC) $(TEXT_BIB3_SRC) $(TEXT_BIB4_SRC)
+#$(TEXT_BIB_DRV): $(TEXT_BIB1_SRC) $(TEXT_BIB2_SRC) $(TEXT_BIB3_SRC) $(TEXT_BIB4_SRC)
+#	mkdir -p $(@D)
+#	cat $(TEXT_BIB1_SRC) > $@
+#	cat $(TEXT_BIB2_SRC) >> $@
+#	cat $(TEXT_BIB3_SRC) >> $@
+#	cat $(TEXT_BIB4_SRC) >> $@
+
+$(TEXT_BIB_DRV): $(TEXT_BIB_ALL_SRC)
 	mkdir -p $(@D)
-	cat $(TEXT_BIB1_SRC) > $@
-	cat $(TEXT_BIB2_SRC) >> $@
-	cat $(TEXT_BIB3_SRC) >> $@
-	cat $(TEXT_BIB4_SRC) >> $@
+	cat $^ > $@
 
 $(TEXT_BIB_ALL_DRV): $(TEXT_TMP_VARIANT_PREFIX)% : $(TEXT_SRC_PREFIX)%
 	mkdir -p $(@D)

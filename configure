@@ -633,6 +633,9 @@ CFLAGS
 CC
 GCC_CMD
 gccCmd
+RULER_PROTO_EXISTS
+RULER_PROTO_CMD
+rulerProtoCmd
 RULER_EXISTS
 RULER_CMD
 rulerCmd
@@ -757,6 +760,7 @@ with_ghc_ehc_options
 with_uuagc
 with_shuffle
 with_ruler
+with_ruler_proto
 with_gcc
 '
       ac_precious_vars='build_alias
@@ -1441,6 +1445,9 @@ Optional Packages:
   --with-ruler=<ruler compiler>
                           Use a command different from 'ruler' to compile with
                           ruler.
+  --with-ruler-proto=<ruler-proto compiler>
+                          Use a command different from 'ruler-proto' to
+                          compile with ruler-proto.
   --with-gcc=<gcc compiler>
                           Use a command different from 'gcc' to compile with
                           GCC.
@@ -3300,6 +3307,74 @@ fi
 RULER_CMD=$rulerCmd
 
 RULER_EXISTS=$rulerExists
+
+
+# ruler-proto
+
+# Check whether --with-ruler-proto was given.
+if test "${with_ruler_proto+set}" = set; then :
+  withval=$with_ruler_proto;  rulerProtoCmd="$withval"
+else
+
+  if test "$RULER_PROTO" = ""; then
+    # Extract the first word of "ruler-proto", so it can be a program name with args.
+set dummy ruler-proto; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_rulerProtoCmd+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $rulerProtoCmd in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_rulerProtoCmd="$rulerProtoCmd" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_rulerProtoCmd="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+rulerProtoCmd=$ac_cv_path_rulerProtoCmd
+if test -n "$rulerProtoCmd"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rulerProtoCmd" >&5
+$as_echo "$rulerProtoCmd" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  else
+    rulerProtoCmd=$RULER_PROTO
+  fi
+
+
+fi
+
+if test "$rulerProtoCmd" != "no" -a -x "$rulerProtoCmd" ; then
+  rulerProtoExists="yes"
+  #rulerProtoVersion=`$rulerProtoCmd --version`
+  buildOptionalToolDependenciesUnchecked="rulerProto-proto>=0.1.0.0 ${buildOptionalToolDependenciesUnchecked}"
+else
+  rulerProtoCmd="${cmdForExitIfAbsentLibOrTool}"
+  rulerProtoExists="no"
+fi
+RULER_PROTO_CMD=$rulerProtoCmd
+
+RULER_PROTO_EXISTS=$rulerProtoExists
 
 
 # gcc
@@ -5823,6 +5898,11 @@ echo "  ruler is available?           : $rulerExists"
 if test "x$rulerExists" = "xyes" ;then
 echo "    version                     : $rulerVersion"
 echo "    command for ruler           : $rulerCmd"
+fi
+echo "  ruler-proto is available?     : $rulerProtoExists"
+if test "x$rulerProtoExists" = "xyes" ;then
+#echo "    version                     : $rulerVersion"
+echo "    command for ruler-proto     : $rulerProtoCmd"
 fi
 
 echo "Absolute location of directories:"

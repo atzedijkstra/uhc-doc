@@ -828,7 +828,7 @@ e2 =  let  instance Eq Int where                            ^ -- (I2)
              x == y = primEqInt  (x `mod` 2)
                                  (y `mod` 2)                ^
       in   3 == 5                                           ^ -- result: True
-%%]
+%%]]
 
 A scope |scope| is defined as a sequence of |Int|s,
 where longer sequences represent more deeply nested scopes,

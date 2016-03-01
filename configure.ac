@@ -31,7 +31,6 @@ fi
 # command/msg to run when tool is absent
 cmdForExitIfAbsentLibOrTool='echo "**** ERROR **** A tool or library is missing. Check ./configure summary." ; exit 1'
 
-
 dnl macro for missing program
 AC_DEFUN(MISSING_FOR_EH,
 [
@@ -545,6 +544,29 @@ fi
 AC_SUBST(RULER_CMD,$rulerCmd)
 AC_SUBST(RULER_EXISTS,$rulerExists)
 
+# ruler-proto
+AC_ARG_WITH(ruler-proto,
+[AS_HELP_STRING([--with-ruler-proto=<ruler-proto compiler>],[Use a command different from 'ruler-proto' to compile with ruler-proto.])],
+[ rulerProtoCmd="$withval" ],
+[
+  if test "$RULER_PROTO" = ""; then
+    AC_PATH_PROG(rulerProtoCmd,ruler-proto)
+  else
+    rulerProtoCmd=$RULER_PROTO
+  fi
+]
+)
+if test "$rulerProtoCmd" != "no" -a -x "$rulerProtoCmd" ; then
+  rulerProtoExists="yes"
+  #rulerProtoVersion=`$rulerProtoCmd --version`
+  buildOptionalToolDependenciesUnchecked="rulerProto-proto>=0.1.0.0 ${buildOptionalToolDependenciesUnchecked}"
+else
+  rulerProtoCmd="${cmdForExitIfAbsentLibOrTool}"
+  rulerProtoExists="no"
+fi
+AC_SUBST(RULER_PROTO_CMD,$rulerProtoCmd)
+AC_SUBST(RULER_PROTO_EXISTS,$rulerProtoExists)
+
 # gcc
 AC_ARG_WITH(gcc,
 [AS_HELP_STRING([--with-gcc=<gcc compiler>],[Use a command different from 'gcc' to compile with GCC.])],
@@ -931,6 +953,11 @@ echo "  ruler is available?           : $rulerExists"
 if test "x$rulerExists" = "xyes" ;then
 echo "    version                     : $rulerVersion"
 echo "    command for ruler           : $rulerCmd"
+fi
+echo "  ruler-proto is available?     : $rulerProtoExists"
+if test "x$rulerProtoExists" = "xyes" ;then
+#echo "    version                     : $rulerVersion"
+echo "    command for ruler-proto     : $rulerProtoCmd"
 fi
 
 echo "Absolute location of directories:"

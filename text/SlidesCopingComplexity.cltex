@@ -703,7 +703,7 @@ algoW
   \item A compiler (UUAGC) glues separate specifications, generating functional program, including boilerplate
   \end{itemize}
 
-  We can think in terms of attributes associated with parent and children in AST,
+  Allows thinking in terms of attributes associated with parent and children in AST,
   defining data flow fragments
   
 \end{frame}
@@ -719,7 +719,7 @@ algoW
 \begin{frame}
   \frametitle{Attribute grammars}
   
-  Way of thinking and programming now can be different
+  %Way of thinking and programming now can be different
    
   \begin{itemize}
   \item All computation is defined in terms of attributes associated with parent and children
@@ -1477,7 +1477,7 @@ SEM Exp
 \begin{frame}
   \frametitle{Implementation: multiple visits/passes}
   
-  UUAGC generates 2 visits (don't try to understand...)
+  UUAGC generates 2 visits (don't try to understand it all...)
 
 {\tiny
 %%[[wrap=safecode
@@ -1597,6 +1597,36 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   \end{itemize}
   
 
+\end{frame}
+
+  
+
+\begin{frame}
+  \frametitle{Moments of reflection: UUAGC, |Ruler|, (non)determinism}
+  
+  Presence of non-determinism ultimately leads to `choosing' mechanisms
+  
+  In UHC: local instances
+  
+%%@TopicCHRLocalInst.classEq  
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection: UUAGC, |Ruler|, (non)determinism}
+  
+  In UHC
+  
+  \begin{itemize}
+    \item Choosing via naming instances (by the UHC programmer)
+    \item Delaying choice in the implementation by generating all possible solutions
+    \begin{itemize}
+      \item Use of Constraint Handling Rules (CHR)\CITE{Dijkstra:2007vm}
+      \item Makes scope explicit
+    \end{itemize}
+  \end{itemize}
+  
 \end{frame}
 
 
@@ -1823,6 +1853,33 @@ Override a fragment for variant 3
 \begin{frame}
   \frametitle{Language variants: |Shuffle|}
   
+  In UHC
+  
+  \begin{center}
+  \begin{tabular}{r||ll}
+     & \textbf{Plain Haskell} & \textbf{Experiments} \\ \hline
+  1  & $\lambda$-calculus, type checking & \\
+  2  & type inference & XX \\
+  3  & polymorphism & XX \\
+  4  & XX & higher ranked types, existentials \\
+  5  & data types & XX \\
+  6  & kind inference & kind signatures \\
+  7  & records & tuples as records \\
+  8  & code generation & whole program analysis \\
+  9  & classes, type-synonyms & extensible records \\
+  ..  & modules &  \\
+  ..  & deriving &  \\
+  ..  & prelude, I/O &  \\
+  ..  & Haskell &  \\
+  \end{tabular}
+  \end{center}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Language variants: |Shuffle|}
+  
   |Shuffle| \Emph{good news}
   
   \begin{itemize}
@@ -1938,7 +1995,7 @@ Override a fragment for variant 3
 %%% Engineering
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Engineering}
+\section{Engineering matters}
 
 \begin{frame}
   \frametitle{Engineering: the devil is in the detail (1)}
@@ -1980,6 +2037,98 @@ Override a fragment for variant 3
 
 \end{frame}
 
+
+
+\begin{frame}
+  \frametitle{Engineering: the devil is in the detail (2)}
+  
+  Encoding of substitutions
+  
+  \[
+  \rulerCmdUse{Lamnochng.A.exp.core.app}
+  \]
+  
+  Naive encoding eagerly propagates substitution, rebuilding structures
+
+\end{frame}
+
+
+%{
+%%@SlidesCopingComplexity.implPreamble
+
+\begin{frame}
+  \frametitle{Engineering: the devil is in the detail (2)}
+  
+  Invariant: substitution maps in 1 lookup (no indirections)
+
+%%[[wrap=safecode
+class Substitutable x where {($->) :: Subst -> x -> x}
+
+instance Substitutable Subst where
+  s1 $-> s2 = s1 ++ map (\(v,t) -> (v, s1 $-> t)) s2          ^^ -- $O(n^2)$
+
+instance Substitutable Ty where
+  s $-> t = case t of
+    TyVar v -> maybe t (s $->) $ lookup v s
+    TyArr a r -> TyArr (s $-> a) (s $-> r)
+
+BLGRAY data TyVar  = BLGRAY ...
+BLGRAY data Ty     = BLGRAY TyInt | TyVar TyVar | TyArr Ty Ty | ...
+BLGRAY type Subst  = BLGRAY [(TyVar,Ty)]
+%%]]
+
+  Does \Emph{not scale}: $O(n^2)$ complexity, size of structures increases (duplication when variables occur |>1| times)
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Engineering: the devil is in the detail (2)}
+  
+  Solution: delay substitution\CITE{UUCS2008027}
+
+%%[[wrap=safecode
+instance Substitutable Subst where
+  s1 $-> s2 = s1 (RED(++ s2))
+
+instance Substitutable Ty where
+  s $-> t = case t of
+    TyVar v -> maybe t (s ^^ $->) $ (RED(substLookup v s))
+    ...
+
+substLookup v s = lookup v s >>= \t ->
+  (tyIsVar t >>= flip substLookup s) <|> return t
+%%]]
+
+  Price: all code assuming fully substituted types now can no longer assume this,
+  must be passed substitution as additional parameter
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+  
+  The \Emph{ideal}
+  \begin{itemize}
+    \item Implementation follows directly from declarative/algorithmic specification
+  \end{itemize}
+  
+  The \Emph{reality}
+  \begin{itemize}
+    \item Engineering issues (scaling up) require (manual) tweaking
+  \end{itemize}
+  
+  In UHC
+  \begin{itemize}
+    \item Manual tweaking, making code less readable/understandable
+    \item Left unexplored: generated implementation for these idioms (e.g. as part of |Ruler|)
+  \end{itemize}
+  
+\end{frame}
+
+
+%}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2127,7 +2276,7 @@ Here we are
 %%% Preamble for bib refs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\usepackage{biblatex}
+\usepackage[backend=bibtex]{biblatex}
 \addbibresource{flops2016-keynote.bib}
 %%]
 

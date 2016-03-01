@@ -306,7 +306,10 @@ text-variant-gbm:
 	  text-variant-dflt-bib
 
 text-variant-icfp07-chr-locinst:
-	$(MAKE) TEXT_CFG_TEXT_INCLUDES_PREV_RULER_TEX=yes TEXT_CFG_FIGS_INCLUDES_DOT_SRC=yes \
+	$(MAKE) \
+	  TEXT_CFG_TEXT_INCLUDES_PREV_RULER_TEX=yes \
+	  TEXT_CFG_FIGS_INCLUDES_DOT_SRC=yes \
+	  TEXT_CFG_TEXT_INCLUDES_RULER_MISC_TEX=yes \
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--unset=yesBeamer --set=icfp07 --set=kscode --set=natbib --set=storyCHRlocinst --set=acm --set=blockstyle --set=asArticle" \
 	  TEXT_SHUFFLE_VARIANT=24 \
 	  text-variant-dflt-bib
@@ -461,4 +464,6 @@ text-variant-slides-flops2016-keynote: $(HMDEMO_ALL_BLD_EXEC)
 	  LHS2TEX_OPTS_VARIANT_CONFIG="--set=yesBeamer --set=flops2016 --set=storyKeynoteUHC --unset=asArticle --set=asSlides --unset=useHyperref --unset=refToPDF" \
 	  TEXT_SHUFFLE_VARIANT=73 \
 	  text-variant-latexmk
+
+#	  text-variant-dflt-bib
 

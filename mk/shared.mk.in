@@ -56,6 +56,7 @@ DOC_PREFIX			:= $(UHCDOC_TOP_PREFIX)doc/
 # compilers and tools used
 AGC							:= @UUAGC_CMD@
 SHUFFLE						:= @SHUFFLE_CMD@
+RULER1						:= @RULER_PROTO_CMD@
 RULER2						:= @RULER_CMD@
 UHC							:= @UHC_CMD@
 GHC							:= @GHC_CMD@
