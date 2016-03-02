@@ -133,7 +133,7 @@
     
     \item \Emph{Lesson(s)}
     \begin{itemize}
-      \item Putting theory into practice (by implementing) is complex, art on its own
+      \item Putting theory into practice (by implementing) as `art' on its own
       \item Can be mitigated by DSLs, tooling, engineering, ...
     \end{itemize}
   \end{itemize}
@@ -406,9 +406,9 @@ Occurs: v8
   \item How to solve equations? Algorithm W (for example), unification, type variables \& substitution
   \end{itemize}
   
-  But...
-  \pause
-  for an implementation design, algorithm, and engineering decisions have to be made
+  %But...
+  %\pause
+  For an implementation design, algorithm, and engineering decisions have to be made
   
   %Observation: 
   
@@ -1622,8 +1622,8 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
     \item Choosing via naming instances (by the UHC programmer)
     \item Delaying choice in the implementation by generating all possible solutions
     \begin{itemize}
-      \item Use of Constraint Handling Rules (CHR)\CITE{Dijkstra:2007vm}
-      \item Makes scope explicit
+      \item Uses DSL for rule based programming: Constraint Handling Rules (CHR)\CITE{Dijkstra:2007vm}
+      \item Rules deal with scope explicitly
     \end{itemize}
   \end{itemize}
   
@@ -1655,14 +1655,16 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 %{
 
 %format pi      = p "_i"
-%format si      = s "_i"
-%format fi      = f "_i"
 %format pj      = p "_j"
-%format sj      = s "_j"
-%format fj      = f "_j"
-%format s12     = s "_{1,2}"
 %format pij     = p "_{i,j}"
+%format si      = s "_i"
+%format sj      = s "_j"
+%format sk      = s "_k"
 %format sij     = s "_{i,j}"
+%format sijk    = s "_{i,j,k}"
+%format s12     = s "_{1,2}"
+%format fi      = f "_i"
+%format fj      = f "_j"
 %format fij     = f "_{i,j}"
 %format <~>     = "\sim"
 
@@ -1732,6 +1734,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   
   \begin{itemize}
     \item Observation: usually |sij /= emptyset| for arbitrary |si,sj|
+    \item For |n| features $> O(n^2)$ combinations, |sk| might require |sijk| specifics
     % \item Does |c f, f `subseteq` {f1,f2}| imply that their specifications |s1| and |s2| compose?
     % \item Compositional for arbitrary specifications |s1| and |s2| (of |f1| and |f2|)?
     % \item Is semantics specification associative, |(s1 ++ s2) ++ s3 = s1 ++ (s2 ++ s3)|, where both |i (s1 ++ s2)| and |i (s2 ++ s3)| are correct interpretations?
@@ -1859,10 +1862,10 @@ Override a fragment for variant 3
   \begin{tabular}{r||ll}
      & \textbf{Plain Haskell} & \textbf{Experiments} \\ \hline
   1  & $\lambda$-calculus, type checking & \\
-  2  & type inference & XX \\
-  3  & polymorphism & XX \\
-  4  & XX & higher ranked types, existentials \\
-  5  & data types & XX \\
+  2  & type inference &  \\
+  3  & polymorphism &  \\
+  4  &  & higher ranked types, existentials \\
+  5  & data types &  \\
   6  & kind inference & kind signatures \\
   7  & records & tuples as records \\
   8  & code generation & whole program analysis \\
@@ -1895,6 +1898,7 @@ Override a fragment for variant 3
   \begin{itemize}
     \item Rather crude/simple 'textual only' tool
     \item Makes build system complex, adds another language to be learned
+    \item Keeping all combinations working takes effort, not all combinations can work
   \end{itemize}
 
   % \pause
@@ -1964,14 +1968,17 @@ Override a fragment for variant 3
     \end{itemize}
   \end{itemize}
 
-  Conjecture: compositionality probably feasible for simple languages, but not for the complex ones (like Haskell)
-  
 \end{frame}
 
 
 
 \begin{frame}
   \frametitle{Moments of reflection: compositionality}
+  
+  \Emph{Conjecture}
+  \begin{itemize}
+    \item Compositionality probably feasible for simple languages, but not for the complex ones (like Haskell)
+  \end{itemize}
   
   What is known about feature composition and their (in)dependence?
 
@@ -2190,6 +2197,8 @@ Here we are
 %%% Extra stuff
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%if draft
+
 \section*{Additional topics}
 
 
@@ -2215,6 +2224,8 @@ Here we are
   \end{itemize}
 
 \end{frame}
+
+%endif % draft
 
 
 %if draft
