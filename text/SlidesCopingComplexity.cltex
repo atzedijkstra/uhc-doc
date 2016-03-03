@@ -89,17 +89,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
-  \frametitle{\Emph{UHC}: Coping with Compiler \Emph{Complexity}}
+  \frametitle{\Emph{UHC}: Coping with Compiler {Complexity}}
   
-  \begin{itemize}
-    \item \Emph{UHC}: Utrecht Haskell Compiler
+  %\begin{itemize}
+  %  \item 
+    \Emph{UHC}: Utrecht Haskell Compiler
     \begin{itemize}
       \item Haskell2010 implementation
       \item Primarily intended for play \& experimentation: higher ranked types, partial type signatures, generic deriving, local instances, java(script) backend, ...
       \item Inspiration for tooling
     \end{itemize}
     
-    \item \Emph{Complexity}: dimensions of complexity
+  %\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{{UHC}: Coping with Compiler \Emph{Complexity}}
+
+  %\begin{itemize}
+  %  \item
+    \Emph{Complexity}: dimensions of complexity
     \begin{itemize}
       \item From specification to implementation
       \item From deterministic to non-deterministic
@@ -107,15 +119,16 @@
       \item From small to large compiler input
     \end{itemize}
     
-    \item \Emph{Approach}: keep specifications as simple as possible
+  %  \item
+    \Emph{Approach}: keep specifications as simple as possible
     \begin{itemize}
-      \item Compositionality
-      \item DSL (Domain Specific Language) for recurring problems
+      \item Compositionality as the holy grail
+      \item DSL (Domain Specific Language)
       \item Generate (e.g. boilerplate code)
       \item Consistency between specifications
     \end{itemize}
     
-  \end{itemize}
+  %\end{itemize}
 
 \end{frame}
 
@@ -124,19 +137,21 @@
 \begin{frame}
   \frametitle{{UHC}: Coping with Compiler {Complexity}}
 
-  \begin{itemize}
-    \item \Emph{Assumptions}
+  %\begin{itemize}
+  %  \item
+    \Emph{Assumptions}
     \begin{itemize}
       \item Basic Haskell
       \item Type systems (Hindley-Milner in particular)
     \end{itemize}
     
-    \item \Emph{Lesson(s)}
+  %  \item
+    \Emph{Take home}
     \begin{itemize}
-      \item Putting theory into practice (by implementing) as `art' on its own
-      \item Can be mitigated by DSLs, tooling, engineering, ...
+      \item The 'art' of putting theory into practice (by implementing)
+      \item Taking the 'art' out of this by using DSLs, tooling, engineering, ...
     \end{itemize}
-  \end{itemize}
+  %\end{itemize}
 
 \end{frame}
 
@@ -197,15 +212,16 @@
   \pause
   \item Story `algorithm': While time left interleave
     \begin{itemize}
-      \item Write a compiler fragment
-      \item Observe/reflect upon problematic issues
-      \item Explore solutions (as taken for UHC)
-      \item Reflect upon solutions
+      \item Write or design a compiler fragment
+      \item Observe/reflect upon problematic issues and solutions
+      \item Explore routes taken by UHC
     \end{itemize}
   \end{itemize}
 
 \end{frame}
 
+
+%if draft
 
 \section*{Contents}
 
@@ -213,6 +229,8 @@
   \tableofcontents
   
 \end{frame}
+
+%endif % draft
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -425,6 +443,8 @@ Occurs: v8
   \rulerCmdUse{Lam.A.exp.onslide}
   }
 
+  Algorithmic |==| computable
+  
   Ready to implement...
   
 \end{frame}
@@ -573,11 +593,11 @@ class Substitutable x where {($->) :: Subst -> x -> x}
   
   The \Emph{reality} is that aspects, features, and their combination usually must be 'aware' of each other to some degree.
   
-  \pause
-  \begin{itemize}
-    \item Why? How is this mitigated in UHC?
-    \item First, we look at combining aspects
-  \end{itemize}
+  %% \pause
+  %% \begin{itemize}
+  %%   \item Why? How is this mitigated in UHC?
+  %%   \item First, we look at combining aspects
+  %% \end{itemize}
   
 \end{frame}
 
@@ -645,7 +665,7 @@ pp (Exp_Let n e b  )  =  "let"  >|< pp n  (RED( >|< ":" >|< pp te >|<))
 \begin{frame}
   \frametitle{Implementation}
 
-  Solution 1: add |pp| to |algoW|:
+  Solution 1: refactor in the 'wrong' direction by adding |pp| to |algoW|:
 
 {\small
 %%[[wrap=safecode
@@ -660,8 +680,6 @@ algoW env st (Exp_App f a) =
 %%]]
 }
 
-  Refactorization in the 'wrong' direction
-
   \begin{itemize}
   \item Adding an aspect implies a manual overhaul of boilerplate code
   \end{itemize}
@@ -670,32 +688,9 @@ algoW env st (Exp_App f a) =
 
 
 \begin{frame}
-  \frametitle{Implementation}
-
-  Solution 2: plumbing via underlying implementation language
-
-\begin{itemize}
-\item A monadic interface for Algorithm W
-%%[[wrap=safecode
-algoW
-      ::  (  MonadReader Env m                  ^^ -- scoped name mapping
-          ,  MonadState (Subst, Int) m          ^^ -- global state
-          ,  MonadError Err m                   ^^ -- error/exception
-          (RED(, MonadWriter Doc m))            ^^ -- \Red{pretty printing}
-          ) => Exp -> m Ty
-%%]]
-\item Boilerplate partially done by monad transformer lifting
-\item Enforces monadic ordering/scheduling
-\item Possibly constrained by underlying type system%, may require a monad per aspect
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
   \frametitle{Attribute grammars}
   
-  Solution 3 (taken by UHC): DSL for computations over ASTs
+  Solution 2 (taken by UHC): DSL for computations over ASTs
 
   \begin{itemize}
   \item Each individual computation expressed as attribute
@@ -908,8 +903,8 @@ SEM Exp
   \FigScaledPDF{0.6}{codesize}
   \end{center}
 
-  \pause
-  But...
+  %\pause
+  %But...
 
 \end{frame}
 
@@ -944,11 +939,236 @@ SEM Exp
 \begin{frame}
   \frametitle{Moments of reflection}
 
-  What can we do to \Emph{guarantee} easier change?
+  Alternative approach: plumbing via underlying implementation language
+
+\begin{itemize}
+\item A monadic interface for Algorithm W
+%%[[wrap=safecode
+algoW
+      ::  (  MonadReader Env m                  ^^ -- scoped name mapping
+          ,  MonadState (Subst, Int) m          ^^ -- global state
+          ,  MonadError Err m                   ^^ -- error/exception
+          (RED(, MonadWriter Doc m))            ^^ -- \Red{pretty printing}
+          ) => Exp -> m Ty
+%%]]
+\item Or, more recently: extensible effects, data types a la carte
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+
+  Common mechanisms (with their drawbacks)
   
   \begin{itemize}
-    \item One DSL for both type rules and implementation of them
+    \item Layers are combined, requires scheduling overhead
+    \begin{itemize}
+      \item Running overhead
+      \item Crossing boundaries overhead (i.e. dependencies between different aspects)
+      \item Layers/aspects indexed by types
+    \end{itemize}
+    \item Each aspect is a separate layer of functionality indexed by a type
+    \begin{itemize}
+      \item Type must be unique amongst aspects
+    \end{itemize}
+  \end{itemize}
+  
+  Extensible building of languages can also be directly modelled in host language Haskell...
+  
+  But...
+  \pause
+  in both cases comes with runtime overhead and need to be aware of (type level) glueing
+
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Language variants: |AspectAG|}
+  
+  Type safe embedding in Haskell of parsers, syntax macros, AST definition, Attribute Grammars\CITE{Viera:2013uo} as knittable fragments
+    
+  \begin{center}
+  \FigScaledPDF{0.6}{talk-ag-fly-1st-class-comparison1}
+  \end{center}
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Language variants: |AspectAG|}
+  
+  Example: Oberon compiler (LDTA challenge\CITE{Anonymous:t9Gd69Tm}) implementation demonstrates dealing with expression problem
+  
+  \begin{center}
+  \FigScaledPDF{0.4}{talk-ag-fly-1st-class-comparison2}
+  \end{center}
+  
+  Elegant though inefficient: heavy use of type level programming, template haskell, resulting code difficult to optimize
+  
+  
+  
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+
+  Alternative approach: visitor pattern from the object-oriented world
+  
+  \begin{itemize}
+    \item Must know about dependencies between results from visits
+    \item (Side effects)
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+
+  Core idea of Attribute Grammars, UUAGC in particular
+  
+  \begin{itemize}
+    \item Restricted form of functional programming (catamorphisms)
+    \item Declaratively specify dependent computations (via attributes)
+    \item Is a preprocessor/compiler,
+    \item allows dependency analysis and tailormade codegen, in particular avoids overhead of monad (and similar) approaches
+  \end{itemize}
+  
+  UUAGC computes how the logistics/scheduling can be done
+
+  \begin{itemize}
+    \item No need to worry about this as a programmer
+    \item Facilitates easy modification (which we wanted for experimentation)
+  \end{itemize}
+
+\end{frame}
+
+
+%{
+%%@SlidesCopingComplexity.implPreamble
+
+\begin{frame}
+  \frametitle{Implementation: multiple visits/passes}
+  
+  Example: need for visits/passes
+  
+  \begin{itemize}
+    \item Small change in running example: pretty print of lambda expression should include inferred type
+    \item Input
+%%[[wrap=safecode
+((\x.x) 5)
+%%]]
+    \item Should pretty print to
+%%[[wrap=verbatim
+(\x:Int.x) (5)
+%%]]
+    \item We know the type: type variable + substitution
+  \end{itemize}
+
+  Substitution |subst| only known after type inference of whole program is done: pass final |subst| (as |substFin|) from |Root| downwards as 2nd pass/visit
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: multiple visits/passes}
+  
+  \begin{center}
+  \agpictureScaled{0.7}{flops2016-keynote/lam1finsubstRoot}
+  \agpictureScaledAtY{8}{3}{0.7}{flops2016-keynote/lam1finsubstLam}
+  \end{center}
+
+%%[[wrap=safecode
+ATTR Exp [ substFin: Subst | | ]
+
+SEM Root
+  | Root            exp .   substFin    =   @exp.subst
+
+SEM Exp
+  | Lam             lhs .   pp          =   "\\"  >|< @n
+                                                  >|< ":" >|< pp (@lhs.substFin $-> @v)
+                                                  >|< "." >|< @exp.pp
+%%]]  
+    
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Implementation: multiple visits/passes}
+  
+  UUAGC generates 2 visits (don't try to understand it all...)
+
+{\tiny
+%%[[wrap=safecode
+type T_Exp = Env -> Subst -> Int -> (Subst,Ty,Int,T_Exp_1)                                      ^^ -- 1st visit (type)
+type T_Exp_1 = Subst -> ( Err,PP_Doc)                                                           ^^ -- 2nd visit (type)
+sem_Exp_App :: T_Exp -> T_Exp -> T_Exp                                                          ^^ -- 1st visit
+sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
+  let     BLGRAY (_fOuniq,_uniq1) = rulerMk1Uniq _lhsIuniq
+  BLGRAY  BLGRAY ( _fIsubst,_fIty,_fIuniq,f_1) = f_ _lhsIenv _lhsIsubst _fOuniq
+  BLGRAY  BLGRAY _tvar_ = mkTyVar _uniq1
+  BLGRAY  BLGRAY ( _aIsubst,_aIty,_aIuniq,a_1) = a_ _lhsIenv _fIsubst _fIuniq
+  BLGRAY  BLGRAY (_subst_u_,_errUnify) = unify (_aIsubst $-> _fIty) (TyArr _aIty _tvar_)    ^^
+          sem_Exp_1 = \ _lhsIsubstFin ->                                                    ^^ -- 2nd visit
+  BLGRAY  BLGRAY   BLGRAY let  BLGRAY ( _aIerr,_aIpp) = a_1 _lhsIsubstFin
+  BLGRAY  BLGRAY   BLGRAY      BLGRAY ( _fIerr,_fIpp) = f_1 _lhsIsubstFin
+  BLGRAY  BLGRAY   BLGRAY in   BLGRAY ( _errUnify ++ _fIerr ++ _aIerr
+  BLGRAY  BLGRAY   BLGRAY      BLGRAY , _fIpp >#< ppParens _aIpp >|< ppErr _errUnify )
+  in      BLGRAY (  BLGRAY _subst_u_ $-> _aIsubst, _subst_u_ $-> _tvar_
+  BLGRAY  BLGRAY ,  BLGRAY _aIuniq
+          BLGRAY ,  sem_Exp_1 )
+%%]]  
+}
+
+  %Personal opinion: happy not to have to write this manually...
+
+\end{frame}
+
+
+%}
+  
+
+\begin{frame}
+  \frametitle{Implementation: multiple visits/passes}
+  
+  Example, statistics for UHC
+  \begin{itemize}
+    \item For analysis of expression terms: 8 visits
+    \begin{center}
+    \begin{tabular}{l||p{.5\linewidth}lll}
+       &  & \multicolumn{3}{l}{\textbf{nr of}} \\ 
+       & \textbf{deals with} & \textbf{inh} & \textbf{syn} & \textbf{inh+syn} \\ \hline
+        0 & source text info & & & 1 \\
+        1 & unique (fresh) identifier generation & & 1 & 1 \\
+        2 & type/kind env & 3 & & 1 \\
+        3 & kind/polarity inference/checking & 6 & & 3 \\
+        4 & class env, final type/kind env, datatype gathering & 4 & & 1 \\
+        5 & new class/instance gathering & 1 & 4 & \\
+        6 & CHR env, value env, type inference & 8 & 5 & 1 \\
+        7 & final value env, error gathering, ...  & 9 & 31 & 1 \\ \hline
+          &  & 31 & 41 & 9 \\
+    \end{tabular}
+    \end{center}
+  \end{itemize}
+  
+\end{frame}
+
+  
+
+\begin{frame}
+  \frametitle{Moments of reflection}
+
+  What \Emph{guarantees} easier change?
+  
+  \begin{itemize}
     \item Embed DSLs, allowing better error reporting
+    \item One DSL for both type rules and implementation of them
   \end{itemize}
   
   \pause
@@ -964,10 +1184,12 @@ SEM Exp
   and an implementation involves usually |>1| host languages
   
   \pause
-  \begin{itemize}
-    \item Why? How is this mitigated in UHC?
-    \item First, we look at consistency between type rules and implementation
-  \end{itemize}
+  %% \begin{itemize}
+  %%   \item Why? How is this mitigated in UHC?
+  %%   \item First, we look at consistency between type rules and implementation
+  %% \end{itemize}
+  
+  In UHC: consistency between type rules and implementation via |Ruler| system
   
 
 \end{frame}
@@ -1103,7 +1325,7 @@ And...
   
   \begin{itemize}
     \item Why? How did we experiment with |Ruler| in UHC? What is |Ruler|?
-    \item First, we look at |Ruler|
+    %\item First, we look at |Ruler|
   \end{itemize}
   
 \end{frame}
@@ -1149,7 +1371,7 @@ Specifies
     \item for the view |D| (declarative)
     \item the 'type' of judgements for |exp|,
     \item its parsing, and
-    \item \latex\ rendering
+    \item \latex\ rendering (here same as parsing spec)
   \end{itemize}
 
 \end{frame}
@@ -1193,7 +1415,7 @@ Specifies
   \begin{itemize}
     \item |Ruler| can generate only when rules are algorithmic and syntax driven
     \item Which the declarative variant of our example is not, so
-    \item We have to add additional info or override existing to arrive at a rule from which we can generate AG
+    \item Need to add additional info or override existing to arrive at a rule from which we can generate AG
   \end{itemize}
 
   |Ruler| provides mechanisms for additional or replacement specification to obtain
@@ -1242,9 +1464,8 @@ Specifies
   \end{itemize}
   
   \pause
-  But
   \begin{itemize}
-    \item Haskell type class system cannot be dealt with in a syntax driven way
+    \item Counterexample: Haskell type class system cannot be dealt with in a syntax driven way
   \end{itemize}
 
   Let's look at its rules and see why...
@@ -1425,117 +1646,6 @@ Haskell type class system
 \end{frame}
 
 
-%{
-%%@SlidesCopingComplexity.implPreamble
-
-\begin{frame}
-  \frametitle{Implementation: multiple visits/passes}
-  
-  Example: need for visits/passes
-  
-  \begin{itemize}
-    \item Small change in running example: pretty print of lambda expression should include inferred type
-    \item Input
-%%[[wrap=safecode
-((\x.x) 5)
-%%]]
-    \item Should pretty print to
-%%[[wrap=verbatim
-(\x:Int.x) (5)
-%%]]
-    \item We know the type: type variable + substitution
-  \end{itemize}
-
-  Substitution |subst| only known after type inference of whole program is done: pass final |subst| (as |substFin|) from |Root| downwards as 2nd pass/visit
-
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{Implementation: multiple visits/passes}
-  
-  \begin{center}
-  \agpictureScaled{0.7}{flops2016-keynote/lam1finsubstRoot}
-  \agpictureScaledAtY{8}{3}{0.7}{flops2016-keynote/lam1finsubstLam}
-  \end{center}
-
-%%[[wrap=safecode
-ATTR Exp [ substFin: Subst | | ]
-
-SEM Root
-  | Root            exp .   substFin    =   @exp.subst
-
-SEM Exp
-  | Lam             lhs .   pp          =   "\\"  >|< @n
-                                                  >|< ":" >|< pp (@lhs.substFin $-> @v)
-                                                  >|< "." >|< @exp.pp
-%%]]  
-    
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{Implementation: multiple visits/passes}
-  
-  UUAGC generates 2 visits (don't try to understand it all...)
-
-{\tiny
-%%[[wrap=safecode
-type T_Exp = Env -> Subst -> Int -> (Subst,Ty,Int,T_Exp_1)                                      ^^ -- 1st visit (type)
-type T_Exp_1 = Subst -> ( Err,PP_Doc)                                                           ^^ -- 2nd visit (type)
-sem_Exp_App :: T_Exp -> T_Exp -> T_Exp                                                          ^^ -- 1st visit
-sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
-  let     BLGRAY (_fOuniq,_uniq1) = rulerMk1Uniq _lhsIuniq
-  BLGRAY  BLGRAY ( _fIsubst,_fIty,_fIuniq,f_1) = f_ _lhsIenv _lhsIsubst _fOuniq
-  BLGRAY  BLGRAY _tvar_ = mkTyVar _uniq1
-  BLGRAY  BLGRAY ( _aIsubst,_aIty,_aIuniq,a_1) = a_ _lhsIenv _fIsubst _fIuniq
-  BLGRAY  BLGRAY (_subst_u_,_errUnify) = unify (_aIsubst $-> _fIty) (TyArr _aIty _tvar_)    ^^
-          sem_Exp_1 = \ _lhsIsubstFin ->                                                    ^^ -- 2nd visit
-  BLGRAY  BLGRAY   BLGRAY let  BLGRAY ( _aIerr,_aIpp) = a_1 _lhsIsubstFin
-  BLGRAY  BLGRAY   BLGRAY      BLGRAY ( _fIerr,_fIpp) = f_1 _lhsIsubstFin
-  BLGRAY  BLGRAY   BLGRAY in   BLGRAY ( _errUnify ++ _fIerr ++ _aIerr
-  BLGRAY  BLGRAY   BLGRAY      BLGRAY , _fIpp >#< ppParens _aIpp >|< ppErr _errUnify )
-  in      BLGRAY (  BLGRAY _subst_u_ $-> _aIsubst, _subst_u_ $-> _tvar_
-  BLGRAY  BLGRAY ,  BLGRAY _aIuniq
-          BLGRAY ,  sem_Exp_1 )
-%%]]  
-}
-
-  Personal opinion: happy not to have to write this manually...
-
-\end{frame}
-
-
-%}
-  
-
-\begin{frame}
-  \frametitle{Implementation: multiple visits/passes}
-  
-  Example, statistics for UHC
-  \begin{itemize}
-    \item For analysis of expression terms: 8 visits
-    \begin{center}
-    \begin{tabular}{l||p{.5\linewidth}lll}
-       &  & \multicolumn{3}{l}{\textbf{nr of}} \\ 
-       & \textbf{deals with} & \textbf{inh} & \textbf{syn} & \textbf{inh+syn} \\ \hline
-        0 & source text info & & & 1 \\
-        1 & unique (fresh) identifier generation & & 1 & 1 \\
-        2 & type/kind env & 3 & & 1 \\
-        3 & kind/polarity inference/checking & 6 & & 3 \\
-        4 & class env, final type/kind env, datatype gathering & 4 & & 1 \\
-        5 & new class/instance gathering & 1 & 4 & \\
-        6 & CHR env, value env, type inference & 8 & 5 & 1 \\
-        7 & final value env, error gathering, ...  & 9 & 31 & 1 \\ \hline
-          &  & 31 & 41 & 9 \\
-    \end{tabular}
-    \end{center}
-  \end{itemize}
-  
-\end{frame}
-
-  
-
 \begin{frame}
   \frametitle{Moments of reflection: UUAGC, |Ruler|, (non)determinism}
   
@@ -1553,7 +1663,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   
   \begin{itemize}
     \item Still have to look at: combining language features (not just aspects per feature)
-    \item Still have to look at: embedding in Haskell to improve usability
+    %\item Still have to look at: embedding in Haskell to improve usability
   \end{itemize}
 
 \end{frame}
@@ -1585,7 +1695,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
     \item In declarative specification (of rules)
     \begin{itemize}
       \item Convert to algorithmic specification
-      \item The \Emph{ideal} would be to annotate (in |Ruler|) which mechanism (|`elem` {|syntax directedness, unification, constraint solving, ...|}|) should be used
+      \item The (practical attainable) \Emph{ideal} would be to annotate (in |Ruler|) which mechanism (|`elem` {|syntax directedness, unification, constraint solving, ...|}|) should be used
     \end{itemize}
     \item In the language (for which we specify rules)
     \begin{itemize}
@@ -1624,6 +1734,8 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
     \begin{itemize}
       \item Uses DSL for rule based programming: Constraint Handling Rules (CHR)\CITE{Dijkstra:2007vm}
       \item Rules deal with scope explicitly
+      \item Left unexplored: programmer specifiable strategies for choosing
+      \item Limitation: CHR variant too limited to be able to deal with (e.g. functional dependencies, ...)
     \end{itemize}
   \end{itemize}
   
@@ -1643,7 +1755,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   Language features versus implementation aspects  
 
   \begin{itemize}
-    \item UUAGC takes care about compositionality of aspects of language features (type system, pretty printing, ...)
+    \item UUAGC takes care about compositionality of aspects (type system, pretty printing, ...) of language features
   \end{itemize}
   
   How does UHC deal with compositionality of language features?
@@ -1784,11 +1896,15 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   \end{center}
   
   \begin{itemize}
-    \item Compositionality: able to independently fill in the squares
-    \item 'Requires' ordering: square higher in 'feature' dimension can only be defined on top of lower square
+    \item UUAGC compositionality: able to independently fill in the squares
+    \item Square ordering
+    \begin{itemize}
+      \item Square assumes presence of other square
+      \item Square overrides (part of) other square (difficult to do with UUAGC)
+    \end{itemize}
   \end{itemize}
     
-  How does UHC deal with compositionality of language features?
+  %How does UHC deal with compositionality of language features?
 
 \end{frame}
 
@@ -1881,6 +1997,18 @@ Override a fragment for variant 3
 
 
 \begin{frame}
+  \frametitle{Language variants: |Shuffle|, |Ruler|}
+  
+  \begin{center}
+  \only<1>{\FigScaledPDF{0.4}{toolchain2d}}
+  \only<2>{\FigScaledPDF{0.4}{toolchain2e}}
+  \only<3>{\FigScaledPDF{0.4}{toolchain2f}}
+  \end{center}
+
+\end{frame}
+
+
+\begin{frame}
   \frametitle{Language variants: |Shuffle|}
   
   |Shuffle| \Emph{good news}
@@ -1912,36 +2040,6 @@ Override a fragment for variant 3
   
   
 
-\end{frame}
-
-
-
-\begin{frame}
-  \frametitle{Language variants: |AspectAG|}
-  
-  Type safe embedding in Haskell of parsers, syntax macros, AST definition, Attribute Grammars\CITE{Viera:2013uo} as knittable fragments
-    
-  \begin{center}
-  \FigScaledPDF{0.6}{talk-ag-fly-1st-class-comparison1}
-  \end{center}
-  
-\end{frame}
-
-
-
-\begin{frame}
-  \frametitle{Language variants: |AspectAG|}
-  
-  Example: Oberon compiler (LDTA challenge\CITE{Anonymous:t9Gd69Tm}) implementation demonstrates dealing with expression problem
-  
-  \begin{center}
-  \FigScaledPDF{0.4}{talk-ag-fly-1st-class-comparison2}
-  \end{center}
-  
-  Elegant though inefficient: heavy use of type level programming, template haskell, resulting code difficult to optimize
-  
-  
-  
 \end{frame}
 
 
@@ -1984,13 +2082,15 @@ Override a fragment for variant 3
 
   \begin{itemize}
     \item \Emph{ideal}: for every paper |pi, pj| (describing theory, semantics, etc) for feature |fi, fj| there is a paper |pij| for |fi + fj|
-    \item \Emph{reality}: there is not
+    \item \Emph{reality}: there are few |pij|'s
     \begin{itemize}
       \item Left to the implementer (to figure something out)
       % \item Might even require 
     \end{itemize}
   \end{itemize}
   
+  \Emph{But still} compositionality is the major mechanism to keep complexity manageable
+
 \end{frame}
 
 
@@ -2006,6 +2106,8 @@ Override a fragment for variant 3
 
 \begin{frame}
   \frametitle{Engineering: the devil is in the detail (1)}
+  
+  (The sting is in the tail, before summarizing)
   
   The small seemingly innocent can bite
 
