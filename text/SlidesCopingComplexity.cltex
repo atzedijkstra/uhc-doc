@@ -97,7 +97,8 @@
     \begin{itemize}
       \item Haskell2010 implementation
       \item Primarily intended for play \& experimentation: higher ranked types, partial type signatures, generic deriving, local instances, java(script) backend, ...
-      \item Inspiration for tooling
+      \item Started as 'proof' of usefulness of parser combinators, attribute grammar system
+      \item Inspiration for further tooling
     \end{itemize}
     
   %\end{itemize}
@@ -122,10 +123,15 @@
   %  \item
     \Emph{Approach}: keep specifications as simple as possible
     \begin{itemize}
-      \item Compositionality as the holy grail
+      \item Compositionality as much/far as possible
       \item DSL (Domain Specific Language)
       \item Generate (e.g. boilerplate code)
       \item Consistency between specifications
+    \end{itemize}
+
+    Underlying desire
+    \begin{itemize}
+      \item Write compiler using reusable compilers components
     \end{itemize}
     
   %\end{itemize}
@@ -146,10 +152,10 @@
     \end{itemize}
     
   %  \item
-    \Emph{Take home}
+    \Emph{Take home}: UHC as example of
     \begin{itemize}
       \item The 'art' of putting theory into practice (by implementing)
-      \item Taking the 'art' out of this by using DSLs, tooling, engineering, ...
+      \item Support for this 'art': DSLs, tooling, engineering, ...
     \end{itemize}
   %\end{itemize}
 
@@ -252,7 +258,7 @@
            |       let n = exp in exp      ^^ -- let binding
 %%]]
 
-\item With Hindley-Milner type system
+\item With Hindley-Milner type system (HM)
 %%[[wrap=safecode
    ty      ::=     Int | ty -> ty | tvar
    pty     ::=     ty | forall tvar . pty
@@ -382,7 +388,7 @@ Occurs: v8
 \begin{frame}
   \frametitle{Type semantics, declarative}
 
-  Hindley-Milner type system (HM), declarative specification for type system
+  HM type system, declarative specification for type system
   {\small
   \rulerCmdUse{Lam.D.exp.onslide}
   }
@@ -617,7 +623,7 @@ pp (Exp_Let n e b  )  =  "let"  >|< pp n >|< "=" >|< pp e >|<
                          "in"   >|< pp b
 
 data Doc = ...                      ^^ -- pretty print document
-(>|<) :: Doc -> Doc -> Doc          ^^ -- concatenate horizontally
+(>|<) :: Doc -> Doc -> Doc          ^^ -- combine horizontally
 %%]]
 
   \item This works well if |pp| does not use info encapsulated in |algoW|
@@ -952,6 +958,9 @@ algoW
           ) => Exp -> m Ty
 %%]]
 \item Or, more recently: extensible effects, data types a la carte
+    \begin{itemize}
+      \item Monadic bind corresponds to higher order attributes
+    \end{itemize}    
 \end{itemize}
 
 \end{frame}
@@ -1068,7 +1077,7 @@ algoW
 %%[[wrap=verbatim
 (\x:Int.x) (5)
 %%]]
-    \item We know the type: type variable + substitution
+    \item Required type: type variable + substitution
   \end{itemize}
 
   Substitution |subst| only known after type inference of whole program is done: pass final |subst| (as |substFin|) from |Root| downwards as 2nd pass/visit
@@ -1137,9 +1146,9 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 \begin{frame}
   \frametitle{Implementation: multiple visits/passes}
   
-  Example, statistics for UHC
+  Statistics for UHC
   \begin{itemize}
-    \item For analysis of expression terms: 8 visits
+    \item Analysis of expression terms: 8 visits
     \begin{center}
     \begin{tabular}{l||p{.5\linewidth}lll}
        &  & \multicolumn{3}{l}{\textbf{nr of}} \\ 
@@ -1164,7 +1173,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
 \begin{frame}
   \frametitle{Moments of reflection}
 
-  What \Emph{guarantees} easier change?
+  What \Emph{allows easier change}?
   
   \begin{itemize}
     \item Embed DSLs, allowing better error reporting
@@ -1179,7 +1188,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
     \item An implementation using various DSLs inside one host language
   \end{itemize}
   
-  The \Emph{reality} is that type systems soon are too complex,
+  The \Emph{reality} is that type systems soon are quite complex,
   'magic' does not exist, embedding DSLs is still ongoing research,
   and an implementation involves usually |>1| host languages
   
@@ -1321,10 +1330,10 @@ And...
 \begin{frame}
   \frametitle{Implementation: |Ruler|}
   
-  Generating a checker for type rules (i.e. code which verifies) is rather difficult
+  Generating a checker for type rules (i.e. code which verifies) turned out to be rather difficult
   
   \begin{itemize}
-    \item Why? How did we experiment with |Ruler| in UHC? What is |Ruler|?
+    \item Why? How did we experiment with |Ruler| in relation to UHC? What is |Ruler|?
     %\item First, we look at |Ruler|
   \end{itemize}
   
@@ -1356,7 +1365,11 @@ And...
 
 
 %{
+
 %format exp		= "exp"
+
+%include ruler.fmt
+
 
 \begin{frame}
   \frametitle{Implementation: |Ruler|}
@@ -1370,8 +1383,9 @@ Specifies
   \begin{itemize}
     \item for the view |D| (declarative)
     \item the 'type' of judgements for |exp|,
-    \item its parsing, and
-    \item \latex\ rendering (here same as parsing spec)
+    \item its parsing,
+    \item \latex\ rendering (here same as parsing spec), and
+    \item algorithmic annotations (here |node| is syntax dispatched on)
   \end{itemize}
 
 \end{frame}
@@ -1459,7 +1473,7 @@ Specifies
     
   When is non-determinism \Emph{present} and/or \Emph{required}?
   \begin{itemize}
-    \item In Hindley-Milner type system example non-deterministism is present, but not required, because we can transform it to
+    \item In HM type system example non-deterministism is present, but not required, because we can transform it to
     \item Algorithm W: deterministic, because rule choice is syntax driven, algorithmic because relationships have direction (are functions, computable)
   \end{itemize}
   
@@ -1512,7 +1526,7 @@ Haskell type class system
 \begin{frame}
   \frametitle{Example: Haskell type class system}
   
-  Extension of Hindley-Milner type system\CITE{jones94phd-qual-types}, declaratively
+  Almost independent extension of HM type system\CITE{jones94phd-qual-types}, declaratively
   {\small
   \rulerCmdUse{Lam.Q.exp.onslide}
   }
@@ -1522,7 +1536,6 @@ Haskell type class system
     \begin{itemize}
       \item E.g. |Eq Int, Eq a => Eq [a]|
     \end{itemize}
-    \item Almost independent extension of HM ...
   \end{itemize}
 
 \end{frame}
@@ -1580,8 +1593,9 @@ Haskell type class system
     \end{itemize}
     \item Theorem proving (context reduction) usually ends up being done in |let| expression, before generalization
     \begin{itemize}
-      \item Constraint solving: gather constraints syntax directed, prove somewhere else
-      \item Need results still at location where constraint arose
+      \item Gather constraints syntax directed, prove at |let| because |ftv(..)| determines satisfiability
+      \item Need results still at location where constraint arose, for inserting evidence,
+      \item Requires representations which can be 'patched' later
     \end{itemize}
   \end{itemize}
   
@@ -1589,7 +1603,7 @@ Haskell type class system
   In general
   
   \begin{itemize}
-    \item The more complex a type system, the less can be done syntax directed, the more must be done via constraint solving (possibly involving backtracking)
+    \item More complex type system, less syntax directedness, more via constraint solving (possibly involving backtracking)
   \end{itemize}
   
 \end{frame}
@@ -1609,7 +1623,7 @@ Haskell type class system
   \begin{itemize}
     \item Just a Prolog program!
     \begin{itemize}
-      \item Can we really live with the resulting inefficiencies?
+      \item Do we really want logic programming (overhead) for all compiler tasks?
     \end{itemize}
     \item Paradigm mix: deterministic (syntax directed) AG-like and non-deterministic (logic programming, constraint solving, backtracking) Prolog-like programming
     \begin{itemize}
@@ -1716,9 +1730,9 @@ Haskell type class system
   
   Presence of non-determinism ultimately leads to `choosing' mechanisms
   
-  In UHC: local instances
-  
 %%@TopicCHRLocalInst.classEq  
+  
+  In UHC: local instances
   
 \end{frame}
 
@@ -1729,12 +1743,16 @@ Haskell type class system
   In UHC
   
   \begin{itemize}
-    \item Choosing via naming instances (by the UHC programmer)
+    \item Choosing via
+    \begin{itemize}
+      \item Scope of instance
+      \item Naming instances (by the UHC programmer)
+    \end{itemize}
     \item Delaying choice in the implementation by generating all possible solutions
     \begin{itemize}
       \item Uses DSL for rule based programming: Constraint Handling Rules (CHR)\CITE{Dijkstra:2007vm}
       \item Rules deal with scope explicitly
-      \item Left unexplored: programmer specifiable strategies for choosing
+      \item Left unexplored: programmer specifiable strategies for choosing (allowing policies for mechanism)
       \item Limitation: CHR variant too limited to be able to deal with (e.g. functional dependencies, ...)
     \end{itemize}
   \end{itemize}
@@ -1792,6 +1810,8 @@ Haskell type class system
       \item \Emph{ideal}: concatenate textually
       \item \Emph{reality}: concatenate textually + additional glue/override
     \end{itemize}
+
+    \pause
     \item More formally:
     \begin{itemize}
       \item Given (already theoretical/formally well defined) language features |fi| (|i `elem` {1,2}|),
@@ -1801,9 +1821,11 @@ Haskell type class system
       \item specific additional specification |s12| to make hold |(s1 ++ s2 ++ s12) <~> (f1 + f2)|,
       \item if |s12 = emptyset| then specifications |s1, s2| are compositional
     \end{itemize}
+
+    \pause
     \item What about compositionality for |f1 + f2|?
     \begin{itemize}
-      \item Practical reformulation: given published papers |pi| for |fi|, what about |p1 + p2|?
+      \item Observation: usually many published papers |pi| for individual |fi|, few papers |p1 + p2|?
     \end{itemize}
     %% \begin{itemize}
     %%   \item \Emph{ideal}: type system for such specifications
@@ -1826,12 +1848,12 @@ Haskell type class system
   Not a new idea:
 
   \begin{center}
-  \begin{tabular}{l||p{.30\linewidth}p{.30\linewidth}}
+  \begin{tabular}{l||p{.35\linewidth}p{.35\linewidth}}
                   & \multicolumn{2}{l}{ \textbf{|i=|}} \\
   \textbf{System}  & \textbf{operational semantics} &  \textbf{verifying code} \\ \hline
   TinkerType\CITE{levin99tinkertype} & \checkmark & \checkmark (unchecked) \\
   PlanCompS\CITE{Churchill:2015ey}  & \checkmark & \checkmark \\
-  |Shuffle|(UHC) & ? & ? \\
+  |Shuffle|(UHC) &  & textual combining \\
   \end{tabular}
   \end{center}
   
@@ -2061,8 +2083,8 @@ Override a fragment for variant 3
     \item Features become tightly coupled
     \item Subsequent feature may need redesign of implementation of previous feature
     \begin{itemize}
-      \item Either must override a lot, or design for the last feature
-      \item Making the first feature also depend on later variants
+      \item Either must override a lot, or design for the last feature,
+      \item making the first feature also depend on later variants
     \end{itemize}
   \end{itemize}
 
@@ -2141,7 +2163,7 @@ Override a fragment for variant 3
   In either case: manual tweaking/optimization required
 
   \begin{itemize}
-    \item Incrementality can be automated\CITE{bransen2015phd-ag-incr}
+    \item Led to exploration of (generation of) incrementality for AG\CITE{bransen2015phd-ag-incr}
   \end{itemize}
 
 \end{frame}
@@ -2261,7 +2283,7 @@ substLookup v s = lookup v s >>= \t ->
   Contributors
   
   \begin{itemize}
-    \item Doaitse Swierstra, Jeroen Fokker, Arie Middelkoop, Marcos Viera, Jeroen Bransen, ...
+    \item Doaitse Swierstra, Jeroen Fokker, Arie Middelkoop, Marcos Viera, Jeroen Bransen, students ...
   \end{itemize}
   
   This talk \& running example demos
@@ -2271,6 +2293,18 @@ substLookup v s = lookup v s >>= \t ->
     \item Built using |Shuffle|, |Ruler|, UUAGC, GHC, \lhstex, \latex
   \end{itemize}
 
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Web locations}
+    
+  \begin{itemize}
+    \item UHC, UUAGC, and other tools:\\
+      \url{https://github.com/UU-ComputerScience/}\\
+      Installable from \url{http://hackage.haskell.org/}
+  \end{itemize}
+  
 \end{frame}
 
 
