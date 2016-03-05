@@ -81,6 +81,8 @@
 %format :=-		= "\mid"
 %format ::-		= "\vDash"
 
+\newcommand{\Space}{\par\vspace{1ex}}
+
 %%]
 
 %%[intro
@@ -131,7 +133,7 @@
 
     Underlying desire
     \begin{itemize}
-      \item Write compiler using reusable compilers components
+      \item Write compiler using reusable compiler idiom
     \end{itemize}
     
   %\end{itemize}
@@ -220,7 +222,7 @@
     \begin{itemize}
       \item Write or design a compiler fragment
       \item Observe/reflect upon problematic issues and solutions
-      \item Explore routes taken by UHC
+      \item Explore routes taken by/for UHC
     \end{itemize}
   \end{itemize}
 
@@ -262,6 +264,7 @@
 %%[[wrap=safecode
    ty      ::=     Int | ty -> ty | tvar
    pty     ::=     ty | forall tvar . pty
+   Env     ::=     Env [n :-> pty] | epsilon
 %%]]
 \end{itemize}
 
@@ -598,6 +601,8 @@ class Substitutable x where {($->) :: Subst -> x -> x}
   \end{itemize}
   
   The \Emph{reality} is that aspects, features, and their combination usually must be 'aware' of each other to some degree.
+  \Space
+  Related to the Expression Problem (later more about that)
   
   %% \pause
   %% \begin{itemize}
@@ -985,7 +990,7 @@ algoW
   \end{itemize}
   
   Extensible building of languages can also be directly modelled in host language Haskell...
-  
+  \Space
   But...
   \pause
   in both cases comes with runtime overhead and need to be aware of (type level) glueing
@@ -1046,7 +1051,7 @@ algoW
     \item Restricted form of functional programming (catamorphisms)
     \item Declaratively specify dependent computations (via attributes)
     \item Is a preprocessor/compiler,
-    \item allows dependency analysis and tailormade codegen, in particular avoids overhead of monad (and similar) approaches
+    \item UUAGC as a preprocessor allows global dependency analysis and tailormade codegen, avoids overhead of monad (and similar) approaches
   \end{itemize}
   
   UUAGC computes how the logistics/scheduling can be done
@@ -1188,9 +1193,17 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
     \item An implementation using various DSLs inside one host language
   \end{itemize}
   
-  The \Emph{reality} is that type systems soon are quite complex,
-  'magic' does not exist, embedding DSLs is still ongoing research,
-  and an implementation involves usually |>1| host languages
+  The \Emph{reality} is that
+  %% type systems soon are quite complex,
+  %% 'magic' does not exist, embedding DSLs is still ongoing research leading to possibly difficult to understand error messages,
+  %% and an implementation involves usually |>1| host languages
+
+  \begin{itemize}
+    \item type systems soon are quite complex,
+    \item 'magic' does not exist,
+    \item embedding DSLs is still ongoing research leading to possibly difficult to understand error messages,
+    \item and an implementation involves usually |>1| host languages
+  \end{itemize}
   
   \pause
   %% \begin{itemize}
@@ -1224,8 +1237,7 @@ sem_Exp_App f_ a_ = \ _lhsIenv _lhsIsubst _lhsIuniq ->
   \rulerCmdUse{Lamnochng.A.exp.core.app}
   \]
 
-  But ...
-  \\ Is \latex\ (+ \lhstex) a good specification language for type rules?
+  Is \latex\ (+ \lhstex) a good specification language for type rules?
 
 \end{frame}
 
@@ -1308,20 +1320,21 @@ And...
   \frametitle{Implementation: |Ruler|}
   
   One specification from which everything else is generated
-  
+  \Space
   Not a new idea:
   
   \begin{center}
   \begin{tabular}{l||p{.17\linewidth}p{.17\linewidth}p{.17\linewidth}p{.17\linewidth}}
                   & \multicolumn{4}{l}{ \textbf{Generates for, or implements}} \\
   \textbf{System} &  \textbf{\latex} &  \textbf{mechanized reasoning} &  \textbf{verified code} & \textbf{verifying code} \\ \hline
-  Ott\CITE{sewell2010ott-jfp} & \checkmark & \checkmark & & \\
+  Ott\CITE{sewell2010ott-jfp} & \checkmark (indirect) & \checkmark & & \\
   Coq\CITEU{Anonymous:J735rZAA} & \checkmark & \checkmark & \checkmark (extraction) & \\
+  Twelf: ML spec\CITEU{dreyer2005phd-ml-nodule} & \checkmark & \checkmark &  & \\
   |Ruler|\CITE{dijkstra06ruler} & \checkmark & & & \checkmark (AG checker) \\
   \end{tabular}
   \end{center}
   
-  But...
+  %But...
   
 \end{frame}
 
@@ -1385,7 +1398,7 @@ Specifies
     \item the 'type' of judgements for |exp|,
     \item its parsing,
     \item \latex\ rendering (here same as parsing spec), and
-    \item algorithmic annotations (here |node| is syntax dispatched on)
+    \item algorithmic annotations (here |node| specifies a variable represents syntax dispatched on)
   \end{itemize}
 
 \end{frame}
@@ -1398,7 +1411,7 @@ Specifies
 
 %%@HMDemoLam.ruleAppViewD wrap=safecode
 
-  Specifies a single rule instance |app| of scheme (type) |exp|
+  Specifies a single rule instance |app| of scheme |exp|
 
   %Generates...
 
@@ -1544,7 +1557,7 @@ Haskell type class system
 \begin{frame}
   \frametitle{Example: Haskell type class system}
   
-  Only need to tweak generalization
+  Tweak generalization
   
   {\small
   \rulerCmdUse{Lam.Q.exp.gen}
@@ -1637,8 +1650,8 @@ Haskell type class system
 \begin{frame}
   \frametitle{Implementation: multiple visits/passes}
     
-  Exploration in context of UUAGC, inspired by UHC:
-
+  Exploration in context of UUAGC, inspired by UHC
+  \Space
   Implementation mechanisms\CITE{middelkoop2012phd-ag-visit}
   for which a combi of AG and constraint solving solutions can be generated
   \begin{itemize}
@@ -1694,7 +1707,7 @@ Haskell type class system
   \end{itemize}
   
   But, as it is, |Ruler| not used anymore in UHC as it offers too little on top of UUAGC
-
+  \Space
   Management of \Emph{complexity} (of choice) of implementation mechanisms: still unresolved
 
 \end{frame}
@@ -2000,7 +2013,7 @@ Override a fragment for variant 3
   \begin{tabular}{r||ll}
      & \textbf{Plain Haskell} & \textbf{Experiments} \\ \hline
   1  & $\lambda$-calculus, type checking & \\
-  2  & type inference &  \\
+  2  & type inference & partial type signature \\
   3  & polymorphism &  \\
   4  &  & higher ranked types, existentials \\
   5  & data types &  \\
@@ -2069,8 +2082,8 @@ Override a fragment for variant 3
 \begin{frame}
   \frametitle{Moments of reflection: compositionality}
   
-  Original approach/desire: use compositionality to simplify specification of UHC
-
+  Approach/desire: use compositionality to simplify specification of UHC
+  \Space
   Does it work? Can it be done?
   
   \begin{itemize}
@@ -2275,9 +2288,35 @@ substLookup v s = lookup v s >>= \t ->
   What did we learn from building UHC?
   
   \begin{itemize}
-    \item From theory to practice is complex!
-    \item Use tools, engineering, dsl's, exploit compositionality
-    \item Some complexity can be engineered away, not all
+    \item Use tools, engineering, (non embedded) dsl, exploit compositionality
+    \item Some complexity can be engineered away, some complexity is introduced by engineering other complexity away
+    \item Even though we use tools (etc) building a (non toy) compiler is complex, requires (human) resources
+    \item Compositionality and language design are intertwined, perhaps too difficult to disentangle
+    \item Not discussed: for the sake of compositionality no |unsafePerformIO| was abused
+    \item Not discussed: performance, some solutions perform worse but tend to be negligable relative to the rest of what compiler does
+    \item Still wishing: compiler writers ``design idiom'' toolbox allowing easy construction of (reasonably) efficient compilers 
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Web locations \& contributors}
+
+  This talk \& running example demos
+  
+  \begin{itemize}
+    \item Built using |Shuffle|, |Ruler|, UUAGC, GHC, \lhstex, \latex
+  \end{itemize}
+
+  URLs
+  
+  \begin{itemize}
+    \item This talk \& running example demos: \\
+      Part of \url{https://github.com/atzedijkstra/uhc-doc}
+    \item UHC, UUAGC, and other tools:\\
+      \url{https://github.com/UU-ComputerScience/}\\
+      Installable from \url{http://hackage.haskell.org/}
   \end{itemize}
 
   Contributors
@@ -2286,24 +2325,6 @@ substLookup v s = lookup v s >>= \t ->
     \item Doaitse Swierstra, Jeroen Fokker, Arie Middelkoop, Marcos Viera, Jeroen Bransen, students ...
   \end{itemize}
   
-  This talk \& running example demos
-  
-  \begin{itemize}
-    \item Part of \url{https://github.com/atzedijkstra/uhc-doc}
-    \item Built using |Shuffle|, |Ruler|, UUAGC, GHC, \lhstex, \latex
-  \end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{Web locations}
-    
-  \begin{itemize}
-    \item UHC, UUAGC, and other tools:\\
-      \url{https://github.com/UU-ComputerScience/}\\
-      Installable from \url{http://hackage.haskell.org/}
-  \end{itemize}
   
 \end{frame}
 
